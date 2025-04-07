@@ -1,0 +1,7 @@
+{
+  "name": "@faeca1/culture",
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ]
+}
