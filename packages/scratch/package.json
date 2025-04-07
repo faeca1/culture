@@ -1,0 +1,12 @@
+{
+  "name": "@faeca1/scratch",
+  "type": "module",
+  "dependencies": {
+    "@api-schema-builder": "^2.0.0",
+    "@faeca1/config": "workspace:*",
+    "@faeca1/matter": "workspace:*",
+    "@faeca1/plug": "workspace:*",
+    "@faeca1/std": "workspace:*",
+    "@faeca1/system": "workspace:*"
+  }
+}
