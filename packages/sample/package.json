@@ -1,0 +1,10 @@
+{
+  "name": "@faeca1/sample",
+  "scripts": {
+    "start": "node --watch index.js"
+  },
+  "dependencies": {
+    "api-schema-builder": "^2.0.0",
+    "@faeca1/matter": "workspace:*"
+  }
+}
