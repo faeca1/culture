@@ -1,6 +1,6 @@
 import { performance } from 'perf_hooks';
 import url from 'url';
-import * as U from "../utils.js";
+import * as U from "./utils.js";
 
 component.create = create;
 export default component;

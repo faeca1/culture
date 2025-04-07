@@ -1,4 +1,4 @@
-export function noop() {
+export function noopLogger() {
   return { debug() { }, info() { }, warn() { }, error() { } };
 }
 
