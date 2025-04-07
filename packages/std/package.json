@@ -1,0 +1,15 @@
+{
+  "name": "@faeca1/std",
+  "type": "module",
+  "version": "0.1.0",
+  "files": [
+    "index.js",
+    "lib"
+  ],
+  "main": "index.js",
+  "author": "faeca1",
+  "license": "MIT",
+  "dependencies": {
+    "@faeca1/plug": "workspace:*"
+  }
+}

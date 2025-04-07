@@ -1,0 +1,11 @@
+*
+
+!.gitignore
+!index.js
+!package.json
+
+!lib/
+!lib/**
+
+!test/
+!test/**
