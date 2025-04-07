@@ -1,0 +1,13 @@
+{
+  "name": "@faeca1/system",
+  "version": "0.1.0",
+  "description": "Dependency-injection for nodejs applications.",
+  "type": "module",
+  "files": [
+    "lib",
+    "index.js"
+  ],
+  "main": "index.js",
+  "author": "faeca1",
+  "license": "ISC"
+}
