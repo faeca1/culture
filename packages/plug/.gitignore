@@ -1,0 +1,6 @@
+*
+
+!.gitignore
+!index.js
+!index.test.js
+!package.json
