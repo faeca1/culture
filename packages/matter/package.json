@@ -1,0 +1,16 @@
+{
+  "name": "@faeca1/matter",
+  "version": "0.1.0",
+  "type": "module",
+  "files": [
+    "dist/index.js"
+  ],
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "bun build index.js --target=node --outfile=dist/index.js",
+    "deps": "bun install --no-save @faeca1/std@workspace:* @faeca1/config@workspace:* @faeca1/system@workspace:*",
+    "release": "rm -rf node_modules dist && npm run deps && npm run build"
+  },
+  "author": "faeca1",
+  "license": "MIT"
+}
