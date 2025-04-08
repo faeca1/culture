@@ -6,6 +6,7 @@ import * as Fetch from "./fetch.js";
 import files from "./files.js"
 import * as predicates from "./predicates.js";
 import sql from "./sql.js";
+import * as tasks from "./tasks.js";
 import web from "./web.js";
 
 const commander = core.commander;
@@ -29,6 +30,7 @@ _.predicates = predicates;
 _.produce = core.immer.produce;
 _.pthen = (fn) => (p) => p.then(fn);
 _.sql = sql;
+_.tasks = tasks;
 _.web = web;
 
 export default _;
@@ -39,4 +41,5 @@ export {
   csp,
   files,
   predicates,
+  tasks,
 };
