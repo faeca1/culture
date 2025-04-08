@@ -2,10 +2,23 @@ import core from "@faeca1/plug";
 const _ = core._;
 
 export default {
+  db,
   call: _.curry(call),
   query: _.curry(query),
   thunk: _.curry(thunk)
 };
+
+
+function db({ postgres }) {
+  return {
+    call(fnName, params) {
+      return call(postgres, fnName, params);
+    },
+    query(text, values) {
+      return query(postgres, text, values);
+    }
+  };
+}
 
 
 function thunk(db, text) {

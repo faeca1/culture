@@ -60,4 +60,52 @@ describe("sql", () => {
       expect(result).toEqual({ foo: 'bar' });
     });
   });
+
+  describe("db", () => {
+    test("correctly passes on query", async () => {
+      // GIVEN
+      const postgres = {
+        queryRaw: mock(async () => [{ foo: 'bar' }])
+      };
+      const db = sql.db({ postgres });
+
+      // WHEN
+      const result = await db.query("SELECT $a", { a: 1 });
+
+      // THEN
+      expect(result).toEqual([{ foo: 'bar' }]);
+      expect(postgres.queryRaw).toHaveBeenCalled();
+      expect(postgres.queryRaw.mock.lastCall).toMatchInlineSnapshot(`
+        [
+          "SELECT $a",
+          {
+            "a": 1,
+          },
+        ]
+      `);
+    });
+  });
+
+  test("correctly passes on call", async () => {
+    // GIVEN
+    const postgres = { queryRaw: mock(async () => [{ result: { foo: 'bar' } }]) };
+    const db = sql.db({ postgres });
+
+    // WHEN
+    const result = await db.call("fn", { a: 1 });
+
+    // THEN
+    expect(result).toEqual({ foo: 'bar' });
+    expect(postgres.queryRaw).toHaveBeenCalled();
+    expect(postgres.queryRaw.mock.lastCall).toMatchInlineSnapshot(`
+        [
+          "SELECT fn($1) AS result;",
+          [
+            {
+              "a": 1,
+            },
+          ],
+        ]
+      `);
+  });
 });
