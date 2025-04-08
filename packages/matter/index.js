@@ -9,6 +9,7 @@ std.system.create = System.create;
 std.system.runner = System.runner;
 std.system.start = System.start;
 std.system.stop = System.stop;
+std.system.toDefinition = System.toDefinition;
 export default std;
 export { config, system };
 

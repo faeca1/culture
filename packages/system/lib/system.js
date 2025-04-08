@@ -7,13 +7,15 @@ system.create = create;
 system.merge = merge;
 system.start = start;
 system.stop = stop;
+system.toDefinition = toDefinition;
 
 export default system;
 export {
   create,
   merge,
   start,
-  stop
+  stop,
+  toDefinition
 };
 
 const STATE = {
@@ -57,6 +59,11 @@ function _toObject(definitions) {
       state = STATE.STOPPED;
     }
   }
+}
+
+
+function toDefinition([init, dependsOn, comesAfter]) {
+  return { init, dependsOn, comesAfter };
 }
 
 

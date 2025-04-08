@@ -1,6 +1,9 @@
 import auth from "./auth/index.js";
 import bole from "./bole.js";
+import boss from "./boss.js";
+import duck from "./duck.js";
 import * as express from "./express/index.js";
+import google from "./google.js";
 import pg from "./pg.js";
 import pino from "./pino.js";
 import postgres from "./postgres.js";
@@ -11,7 +14,10 @@ export default get;
 export {
   auth,
   bole,
+  boss,
+  duck,
   express,
+  google,
   pg,
   pino,
   postgres,
@@ -28,6 +34,10 @@ function get(name, opts) {
       return auth();
     case "bole":
       return bole(packages);
+    case "boss":
+      return boss(packages);
+    case "duck":
+      return duck(packages);
     case "express.app":
       return express.app(packages);
     case "express.errorHandler":
@@ -36,6 +46,10 @@ function get(name, opts) {
       return express.middleware();
     case "express.server":
       return express.server();
+    case "google.auth":
+      return google.auth(packages);
+    case "google.sheets":
+      return google.sheets(packages);
     case "pg":
       return pg(packages);
     case "pino":
