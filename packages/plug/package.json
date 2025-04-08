@@ -9,7 +9,7 @@
   "scripts": {
     "build": "bun build index.js --target=node --outfile=dist/index.js",
     "deps": "bun install --no-save ajv@8.17.1 bole@5.0.3 commander@13.1.0 debug@1.0.5 http-errors@2.0.0 immer@10.1.1 lodash@4.17.21 lru-cache@6.0.0 postgres@3.3.4 qs@6.8.0 queueable@5.3.2 restana@4.9.9 tiny-json-body-parser@1.0.2 @arrows/multimethod@2.1.0",
-    "release": "rm -rf dist node_modules && bun run deps && bun run build"
+    "release": "bun run deps && bun run build"
   },
   "author": "faeca1",
   "license": "MIT"
