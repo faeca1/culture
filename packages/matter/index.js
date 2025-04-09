@@ -5,14 +5,13 @@ const pkgs = std.packages;
 
 std.config = config;
 std.system = system;
-std.system.create = System.create;
-std.system.runner = System.runner;
-std.system.start = System.start;
-std.system.stop = System.stop;
-std.system.toDefinition = System.toDefinition;
-export default std;
-export { config, system };
+Object.keys(System).forEach(k => {
+  std.system[k] = System[k];
+});
 
+export default std;
+export { config, std as _, system };
+export * from "@faeca1/std";
 
 function system(definition, opts) {
   const packages = { ...pkgs, ...opts?.packages };

@@ -1,6 +1,5 @@
 import { test, expect, describe } from "bun:test";
-import core from "./index.js";
-const optional = core.optional;
+import { optional } from "./index.js";
 
 describe("optional", () => {
   test("returns module if present", () => {

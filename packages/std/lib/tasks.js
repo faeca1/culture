@@ -1,3 +1,4 @@
+import { _ } from "@faeca1/plug";
 import csp from "./csp.js";
 
 export { jobs, workers };

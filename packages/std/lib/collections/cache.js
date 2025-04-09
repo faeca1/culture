@@ -1,10 +1,10 @@
-import core from "@faeca1/plug";
+import * as core from "@faeca1/plug";
 const LRU = core.lruCache;
 const debug = core.debug("faeca1:std:cache");
 
 const RESET_KEY = "__reset_xd04vbhjrr";
 
-export default function(keyFn, underlyingFn, opts = {}) {
+export default function (keyFn, underlyingFn, opts = {}) {
   const log = opts.logger
     ? opts.logger.child({ component: "cache" })
     : { info() { } };

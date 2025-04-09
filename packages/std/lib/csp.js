@@ -1,4 +1,4 @@
-import Core from "@faeca1/plug";
+import { queueable } from "@faeca1/plug";
 
 export default {
   chan,
@@ -11,7 +11,7 @@ export default {
 
 
 function chan() {
-  return new Core.queueable.Channel();
+  return new queueable.Channel();
 }
 
 

@@ -1,7 +1,6 @@
-import core from "@faeca1/plug";
-const _ = core._;
+import { _ } from "@faeca1/plug";
 
-export default function(opts) {
+export default function (opts) {
   const config = { maxHits: (opts && opts.maxHits) || 1 };
   const store = {};
 

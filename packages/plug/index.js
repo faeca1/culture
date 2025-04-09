@@ -13,7 +13,7 @@ import qs from "qs";
 import * as queueable from "queueable";
 import restana from "restana";
 
-export default {
+export {
   _,
   ajv,
   bole,

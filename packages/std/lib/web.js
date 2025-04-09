@@ -1,6 +1,4 @@
-import core from "@faeca1/plug";
-const _ = core._;
-const E = core.httpErrors;
+import { _, httpErrors as E } from "@faeca1/plug";
 
 export default {
   bindr: _.curry(bindDependencies),

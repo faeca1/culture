@@ -1,7 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import pkgs from "@faeca1/plug";
-const _ = pkgs._;
+import { _ } from "@faeca1/plug";
 
 const write = _.curry(writer);
 export default { toPathParts, writeAsJson, write };

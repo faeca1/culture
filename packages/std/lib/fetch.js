@@ -1,5 +1,4 @@
-import pkgs from '@faeca1/plug';
-const { _ } = pkgs;
+import { _ } from '@faeca1/plug';
 
 export default { get, post };
 export { get, post };

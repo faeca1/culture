@@ -1,4 +1,4 @@
-import core from "@faeca1/plug";
+import * as core from "@faeca1/plug";
 import asyncIterables from "./async-iterables.js";
 import collections from "./collections/index.js";
 import csp from "./csp.js";
@@ -38,6 +38,7 @@ export {
   asyncIterables,
   commander,
   core as pkgs,
+  core as packages,
   csp,
   files,
   predicates,

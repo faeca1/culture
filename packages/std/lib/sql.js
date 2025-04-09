@@ -1,5 +1,4 @@
-import core from "@faeca1/plug";
-const _ = core._;
+import { _ } from "@faeca1/plug";
 
 export default {
   db,

@@ -1,6 +1,6 @@
 import * as U from "./utils.js";
 import toposort from "./toposort.js";
-import components from "./components/index.js";
+import getComponents, * as components from "./components/index.js";
 
 system.components = components;
 system.create = create;
@@ -10,13 +10,6 @@ system.stop = stop;
 system.toDefinition = toDefinition;
 
 export default system;
-export {
-  create,
-  merge,
-  start,
-  stop,
-  toDefinition
-};
 
 const STATE = {
   NEVER_STARTED: 0,
@@ -135,7 +128,7 @@ function _conformComponent(c, opts) {
   if (U.isFunction(c.init)) { return { start: c.init }; }
   if (U.isFunction(c.init?.start)) { return c.init; }
 
-  if (U.isString(c.init)) { return components(c.init, opts); }
+  if (U.isString(c.init)) { return getComponents(c.init, opts); }
 
   if (c.init) return { start() { return c.init; } }
   if (c.dependsOn) return { start(ds) { return ds; } };
@@ -259,7 +252,7 @@ function _toDefinition([k, v], opts) {
   const _start = mainDefinition.component.start;
 
   // patch start function to attach sub components back onto object
-  mainDefinition.component.start = async function(deps) {
+  mainDefinition.component.start = async function (deps) {
     const obj = await _start(deps);
     for (const s in deps) { if (subObj[s]) { obj[s] = deps[s]; } }
     return obj;
