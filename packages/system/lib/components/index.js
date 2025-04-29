@@ -64,6 +64,8 @@ function get(name, opts) {
       return restana.datadog();
     case "restana.logger":
       return restana.logger();
+    case "restana.routes":
+      return restana.routes();
     case "restana.server":
       return restana.server();
     case "restana.swagger":

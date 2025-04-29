@@ -3,16 +3,14 @@ const apiSchemaBuilder = require("api-schema-builder");
 const docs = require("./spec");
 
 
-function handler(__) {
-  return _.web.response.ok({ msg: "Hello!" });
-}
-
-
-function routes({ app, auth }) {
-  app.get("/persons/:id",
-    auth.authenticate(),
-    auth.authorize(0),
-    _.web.handlrr(handler))
+function handlers() {
+  return _.mapValues(_.web.handlrr)({
+    getPersonById(req) {
+      const id = req.params.id;
+      const person = { id, name: "pizza", age: 10 };
+      return _.web.response.ok(person);
+    }
+  });
 }
 
 
@@ -25,6 +23,7 @@ const definition = {
   config: {
     http: {
       auth: { basic: { allowed: 'user:ssshhh:3' } },
+      routes: { roles: { ping: 0, read: 1 } },
       swagger: { buildResponses: false },
     },
     logger: { level: "debug", name: "pizza" },
@@ -32,13 +31,15 @@ const definition = {
   docs,
   http: {
     auth: _C(['auth', ['config', 'app'], 'reqLogger']),
-    reqLogger: _C(['restana.logger', ['app', 'logger']]),
     app: _C(['restana.app', ['config', 'logger']]),
     datadog: _C(['restana.datadog', 'app']),
+    handlers,
+    reqLogger: _C(['restana.logger', ['app', 'logger']]),
+    routes: _C(['restana.routes', ['app', 'auth', 'config', 'docs', 'handlers'], ['datadog', 'swagger']]),
     server: _C(['restana.server', ['app', 'logger', 'config'], 'routes']),
     swagger: _C(['restana.swagger', ['app', 'docs', 'config'], 'auth']),
-    routes: _C([routes, ['app', 'auth'], ['datadog', 'swagger']]),
-  }, logger: ['bole', 'config'],
+  },
+  logger: ['bole', 'config'],
 };
 
 const system = _.system(definition, { packages: { apiSchemaBuilder } });

@@ -140,13 +140,15 @@ function SwaggerValidator(builder, app, spec, options = {}) {
       })
     }
   })
+
+  return schema;
 }
 
 function getSwaggerUi(swaggerSpec) {
   return `
       <!DOCTYPE html>
       <html lang="en">
-      
+
       <head>
         <meta charset="UTF-8">
         <title>Swagger UI</title>
@@ -160,13 +162,13 @@ function getSwaggerUi(swaggerSpec) {
             overflow: -moz-scrollbars-vertical;
             overflow-y: scroll;
           }
-      
+
           *,
           *:before,
           *:after {
             box-sizing: inherit;
           }
-      
+
           body {
             margin: 0;
             background: #fafafa;
@@ -210,7 +212,7 @@ function component(options = {}) {
 
   return {
     start({ app, docs, config }) {
-      SwaggerValidator(apiSchemaBuilder, app, docs, config);
+      return SwaggerValidator(apiSchemaBuilder, app, docs, config);
     }
   };
 }

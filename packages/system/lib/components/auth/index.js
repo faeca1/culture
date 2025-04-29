@@ -54,8 +54,13 @@ function createAuth(publicKey, users, isExpress) {
           throw new Error("Missing actor role information on request object");
         }
 
-        if (hasRole(role, req.actor.roles)) {
-          return next();
+        if (!role) { role = 0 };
+        if (!Array.isArray(role)) { role = [role]; }
+        if (role.length === 0) { return next(); }
+        for (let i = 0; i < role.length; i++) {
+          if (hasRole(role[i], req.actor.roles)) {
+            return next();
+          }
         }
 
         const e = new Error("Forbidden");
