@@ -1,7 +1,7 @@
 import { _ } from "@faeca1/plug";
 import csp from "./csp.js";
 
-export { jobs, pushedJobs, workers };
+export { jobs, pushedJobs, queues, workers };
 
 
 async function queues(deps) {
