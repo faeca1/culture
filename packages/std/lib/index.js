@@ -24,6 +24,7 @@ _.files = files;
 _.freeze = core.immer.freeze;
 _.mm = mm;
 _.packages = core;
+_.partialValues = web.bindr
 _.peek = (x) => { console.log(x); return x; };
 _.pkgs = core;
 _.predicates = predicates;

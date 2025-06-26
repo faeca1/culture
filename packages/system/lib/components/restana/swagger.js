@@ -71,7 +71,7 @@ function SwaggerValidator(builder, app, spec, options = {}) {
     requireSchemaSpec: true,
     apiSpecEndpoint: '/swagger.json',
     uiEndpoint: '/docs',
-    publicApiEndpoint: 'http://localhost:3000'
+    publicApiEndpoint: 'http://localhost:8000'
   }, options)
   let schema
   try {

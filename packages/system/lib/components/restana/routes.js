@@ -1,15 +1,21 @@
 export default function component() {
   return {
     start({ app, auth, config, docs, handlers }) {
-      app.use(auth.authenticate());
+      if (auth) {
+        app.use(auth.authenticate());
+      }
 
       for (const [path, methods] of Object.entries(docs.paths)) {
         for (const [method, endpoint] of Object.entries(methods)) {
           const handler = handlers[endpoint.operationId];
           if (handler) {
             const normalizedPath = path.replace(/{(\w+)}/g, ':$1');
-            const scopes = securityScopes(config.roles, endpoint.security);
-            app[method](normalizedPath, auth.authorize(scopes), handler);
+            if (auth) {
+              const scopes = securityScopes(config.roles, endpoint.security);
+              app[method](normalizedPath, auth.authorize(scopes), handler);
+            } else {
+              app[method](normalizedPath, handler);
+            }
           }
         }
       }

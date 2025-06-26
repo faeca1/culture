@@ -15,5 +15,11 @@ export * from "@faeca1/std";
 
 function system(definition, opts) {
   const packages = { ...pkgs, ...opts?.packages };
-  return System(definition, { ...opts, packages });
+  let obj = definition;
+  if (opts?.configure) {
+    const wrapped = config(definition.config);
+
+    obj = { ...definition, config: wrapped };
+  }
+  return System(obj, { ...opts, packages });
 }
