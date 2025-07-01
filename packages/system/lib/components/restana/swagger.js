@@ -211,8 +211,8 @@ function component(options = {}) {
   const apiSchemaBuilder = options.apiSchemaBuilder;
 
   return {
-    start({ app, docs, config }) {
-      return SwaggerValidator(apiSchemaBuilder, app, docs, config);
+    start({ app, docs, config, router }) {
+      return SwaggerValidator(apiSchemaBuilder, router || app, docs, config);
     }
   };
 }

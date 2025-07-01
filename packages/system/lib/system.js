@@ -8,6 +8,7 @@ system.merge = merge;
 system.start = start;
 system.stop = stop;
 system.toDefinition = toDefinition;
+system.toDefinitions = toDefinitions;
 
 export default system;
 
@@ -55,8 +56,21 @@ function _toObject(definitions) {
 }
 
 
-function toDefinition([init, dependsOn, comesAfter]) {
-  return { init, dependsOn, comesAfter };
+function toDefinition(opts) {
+  if (Array.isArray(opts)) {
+    const [init, dependsOn, comesAfter] = opts;
+    return { init, dependsOn, comesAfter };
+  } else {
+    return { init: () => opts };
+  }
+}
+
+
+function toDefinitions(obj) {
+  return Object.entries(obj).reduce((acc, [k, v]) => {
+    acc[k] = toDefinition(v);
+    return acc;
+  }, {});
 }
 
 

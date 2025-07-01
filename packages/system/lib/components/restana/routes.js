@@ -1,8 +1,9 @@
 export default function component() {
   return {
-    start({ app, auth, config, docs, handlers }) {
+    start({ app, auth, config, docs, handlers, router }) {
+      const mount = router || app;
       if (auth) {
-        app.use(auth.authenticate());
+        mount.use(auth.authenticate());
       }
 
       for (const [path, methods] of Object.entries(docs.paths)) {
@@ -12,9 +13,9 @@ export default function component() {
             const normalizedPath = path.replace(/{(\w+)}/g, ':$1');
             if (auth) {
               const scopes = securityScopes(config.roles, endpoint.security);
-              app[method](normalizedPath, auth.authorize(scopes), handler);
+              mount[method](normalizedPath, auth.authorize(scopes), handler);
             } else {
-              app[method](normalizedPath, handler);
+              mount[method](normalizedPath, handler);
             }
           }
         }

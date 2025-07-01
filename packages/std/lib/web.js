@@ -4,6 +4,7 @@ export default {
   bindr: _.curry(bindDependencies),
   check: { wasFound, wasSuccessful },
   errors: E,
+  handlers: _.curry(handlers),
   handlr: handlr,
   handlrr: handlrr,
   paginate: _.curry(toPagination),
@@ -175,3 +176,11 @@ function handlr(fn) {
 function handlrr(fn) {
   return handlr(req => fn(init(req)));
 }
+
+
+function handlers(deps, functions) {
+  // create middleware fns of the form (req, res, next) -> void
+  const toMiddleware = fn => handlrr(_.partial(fn, [deps]));
+  return _.mapValues(toMiddleware)(functions);
+}
+

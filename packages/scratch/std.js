@@ -74,6 +74,13 @@ function checks() {
   console.log(_.web.request.init({ actor: { actorId: 1 } }).auth)
   console.log(_.web.request.init({ actor: { actorId: 1, foo: 'pizza' } }).auth)
   console.log(_.web.request.init({ actor: { actorId: 1, foo: 'pizza', teamId: "blah" } }).auth)
+
+  const fns = { foo: ({ maths }, req) => maths.double(req.params.id) }
+  const maths = { double(i) { return 2 * i; } }
+  const middleware = _.web.handlers({ maths }, fns);
+  const req = { params: { id: Math.PI } };
+  const res = { send(x) { console.log(x); } };
+  middleware.foo(req, res)
 }
 
 checks();
