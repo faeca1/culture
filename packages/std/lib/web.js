@@ -7,6 +7,7 @@ export default {
   handlers: _.curry(handlers),
   handlr: handlr,
   handlrr: handlrr,
+  jsonApiHeaders,
   paginate: _.curry(toPagination),
   request: {
     arrayifyBody,
@@ -25,6 +26,22 @@ export default {
     header: _.curry(header)
   },
 };
+
+
+function jsonApiHeaders(opts = {}) {
+  const headers = { "Content-Type": "application/json" };
+  if (opts.token) {
+    headers["Authorization"] = `Bearer ${opts.token}`;
+  } else if (opts.key && opts.secret) {
+    const authStr = Buffer.from(`${key}:${secret}`).toString('base64');
+    headers["Authorization"] = `Basic ${authStr}`;
+  } else if (opts.username && opts.password) {
+    const authStr = Buffer.from(`${username}:${password}`).toString('base64');
+    headers["Authorization"] = `Basic ${authStr}`;
+  }
+
+  return headers;
+}
 
 
 function arrayifyBody(obj) {
