@@ -1,5 +1,5 @@
 export function withChildLogger(obj, name) {
-  return { ...obj, logger: conceive(obj.logger, name) };
+  return { ...obj, logger: child(obj.logger, name) };
 }
 
 

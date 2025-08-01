@@ -81,6 +81,13 @@ function checks() {
   const req = { params: { id: Math.PI } };
   const res = { send(x) { console.log(x); } };
   middleware.foo(req, res)
+
+  const system = {
+    foo: true,
+    a: { b: "pizza" },
+    logger: { child({ component }) { console.log(`creating child ${component}`) } }
+  };
+  const sub = _.log.withChildLogger(system, "testing");
 }
 
 checks();
