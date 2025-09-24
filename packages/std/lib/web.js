@@ -7,14 +7,13 @@ export default {
   handlers: _.curry(handlers),
   handlr: handlr,
   handlrr: handlrr,
-  jsonApiHeaders,
   paginate: _.curry(toPagination),
   request: {
     arrayifyBody,
     arrayifyQuery,
     init,
     flatten,
-    paging
+    paging,
   },
   response: {
     ok,
@@ -23,34 +22,16 @@ export default {
     badRequest,
     notFound,
     isResponse,
-    header: _.curry(header)
+    header: _.curry(header),
   },
 };
-
-
-function jsonApiHeaders(opts = {}) {
-  const headers = { "Content-Type": "application/json" };
-  if (opts.token) {
-    headers["Authorization"] = `Bearer ${opts.token}`;
-  } else if (opts.key && opts.secret) {
-    const authStr = Buffer.from(`${key}:${secret}`).toString('base64');
-    headers["Authorization"] = `Basic ${authStr}`;
-  } else if (opts.username && opts.password) {
-    const authStr = Buffer.from(`${username}:${password}`).toString('base64');
-    headers["Authorization"] = `Basic ${authStr}`;
-  }
-
-  return headers;
-}
-
 
 function arrayifyBody(obj) {
   return {
     ...obj,
-    body: { ..._.mapValues(arrayify)(obj.body) }
-  }
+    body: { ..._.mapValues(arrayify)(obj.body) },
+  };
 }
-
 
 function arrayifyQuery(obj) {
   return {
@@ -59,11 +40,10 @@ function arrayifyQuery(obj) {
       ..._.mapValues(arrayify)(obj.query),
       limit: obj.query.limit,
       offset: obj.query.offset,
-      q: obj.query.q
-    }
+      q: obj.query.q,
+    },
   };
 }
-
 
 function init(req) {
   return {
@@ -74,43 +54,36 @@ function init(req) {
   };
 }
 
-
 function paging(obj) {
   return {
     ...obj,
     query: {
       ...obj.query,
       limit: Math.max(0, Math.min(obj.query.limit || 20, 100)),
-      offset: Math.max(0, obj.query.offset || 0)
-    }
+      offset: Math.max(0, obj.query.offset || 0),
+    },
   };
 }
 
-
 function ok(body) {
-  return { status: 200, headers: {}, body };
+  return { ok: true, status: 200, headers: {}, body };
 }
-
 
 function created(body) {
-  return { status: 201, headers: {}, body };
+  return { ok: true, status: 201, headers: {}, body };
 }
-
 
 function noContent() {
-  return { status: 204, headers: {} };
+  return { ok: true, status: 204, headers: {} };
 }
-
 
 function badRequest(body) {
-  return { status: 400, headers: {}, body };
+  return { ok: false, status: 400, headers: {}, body };
 }
-
 
 function notFound(body) {
-  return { status: 404, headers: {}, body };
+  return { ok: false, status: 404, headers: {}, body };
 }
-
 
 function header(name, value, resp) {
   const r = { ...resp };
@@ -119,17 +92,14 @@ function header(name, value, resp) {
   return r;
 }
 
-
 function isResponse(obj) {
   return obj?.status && obj?.headers;
 }
-
 
 function wasFound(x) {
   if (_.isNil(x)) throw new E(404, "No matching item found");
   return x;
 }
-
 
 function wasSuccessful(x) {
   if (_.isNil(x)) throw new E(500, "wasSuccessful called with nil result");
@@ -139,25 +109,26 @@ function wasSuccessful(x) {
   throw new E(status, message, { code, name });
 }
 
-
 function bindDependencies(deps, obj) {
-  return _.mapValues(f => _.partial(f, [deps]))(obj);
+  return _.mapValues((f) => _.partial(f, [deps]))(obj);
 }
 
-
 function flatten(req) {
-  if (!req.params || !req.query) { return req; }
+  if (!req.params || !req.query) {
+    return req;
+  }
 
   const { auth, body, params, query } = req;
   return { auth, ...body, ...params, ...query };
 }
 
-
 function toPagination(req, data) {
   const { offset, limit } = flatten(req || {});
-  return { data: data || [], pagination: { offset, limit, count: data?.length || 0 } };
+  return {
+    data: data || [],
+    pagination: { offset, limit, count: data?.length || 0 },
+  };
 }
-
 
 function extractAuth(req) {
   if (!req || !req.actor) return void 0;
@@ -165,19 +136,23 @@ function extractAuth(req) {
   return { actorId, teamId, email, username, roles };
 }
 
-
 function arrayify(item) {
   return Array.isArray(item) ? item : [item];
 }
-
 
 function handlr(fn) {
   return async function handleMiddleware(req, res, next) {
     try {
       let resp = await fn(req);
-      if (_.isUndefined(resp)) { resp = noContent(); }
-      if (_.isNull(resp)) { resp = notFound(); }
-      if (!isResponse(resp)) { resp = ok(resp); }
+      if (_.isUndefined(resp)) {
+        resp = noContent();
+      }
+      if (_.isNull(resp)) {
+        resp = notFound();
+      }
+      if (!isResponse(resp)) {
+        resp = ok(resp);
+      }
 
       // resp is now in standard form;
 
@@ -186,18 +161,15 @@ function handlr(fn) {
     } catch (e) {
       next(e);
     }
-  }
+  };
 }
-
 
 function handlrr(fn) {
-  return handlr(req => fn(init(req)));
+  return handlr((req) => fn(init(req)));
 }
-
 
 function handlers(deps, functions) {
   // create middleware fns of the form (req, res, next) -> void
-  const toMiddleware = fn => handlrr(_.partial(fn, [deps]));
+  const toMiddleware = (fn) => handlrr(_.partial(fn, [deps]));
   return _.mapValues(toMiddleware)(functions);
 }
-
