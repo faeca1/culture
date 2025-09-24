@@ -1,6 +1,6 @@
 {
   "name": "@faeca1/matter",
-  "version": "0.9.1",
+  "version": "0.10.0",
   "type": "module",
   "files": [
     "dist/index.js"

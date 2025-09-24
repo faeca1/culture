@@ -53,7 +53,7 @@ describe("http", () => {
           "req": {
             "baseUrl": "http:localhost:4321/api",
             "headers": {
-              "User-Agent": "@faeca1/std:0.4.0",
+              "User-Agent": "@faeca1/std:0.10.0",
             },
             "method": "GET",
             "path": "/toppings/1",
@@ -183,7 +183,7 @@ describe("http", () => {
             },
             "headers": {
               "Content-Type": "application/json; charset=UTF-8",
-              "User-Agent": "@faeca1/std:0.4.0",
+              "User-Agent": "@faeca1/std:0.10.0",
             },
             "method": "POST",
             "path": "/toppings",
