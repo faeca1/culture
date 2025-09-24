@@ -1,7 +1,7 @@
 import _ from "@faeca1/std";
-import loaders from "./lib/loaders";
-import processors from "./lib/processors";
-import configurator from "./lib/configurator";
+import loaders from "./lib/loaders/index.js";
+import processors from "./lib/processors/index.js";
+import configurator from "./lib/configurator.js";
 
 component.of = of;
 component.configurator = configurator;
@@ -9,7 +9,6 @@ component.loaders = loaders;
 component.processors = processors;
 export default component;
 export { of, configurator, loaders, processors };
-
 
 function create(path, opts = {}) {
   const defaults = {
@@ -46,16 +45,18 @@ function create(path, opts = {}) {
   return m;
 }
 
-
 function of(path, options) {
   return create(path, options).load();
 }
 
-
 function component(path, options) {
+  if (path?._a43fgjdfnb54) {
+    return path;
+  }
+
   const config = create(path, options);
 
-  return function loadConfig() {
-    return config.load();
-  };
+  const start = () => config.load();
+  start._a43fgjdfnb54 = true;
+  return start;
 }

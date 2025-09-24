@@ -1,11 +1,10 @@
 import _ from "@faeca1/std";
 
-klass.add = add;
-klass.init = init;
-klass.load = load;
-export default klass;
+configurator.add = add;
+configurator.init = init;
+configurator.load = load;
+export default configurator;
 export { add, init, load };
-
 
 // state = { factories: [], options: { } };
 
@@ -15,13 +14,11 @@ function init(options) {
   });
 }
 
-
 function add(configurator, factory) {
   return _.produce(configurator, (it) => {
     it.factories.push(factory);
   });
 }
-
 
 async function load(configurator) {
   const configs = await Promise.all(configurator.factories.map((f) => f()));
@@ -29,8 +26,7 @@ async function load(configurator) {
   return _.freeze(result, true);
 }
 
-
-function klass() {
+function configurator() {
   let state = init();
 
   return {
