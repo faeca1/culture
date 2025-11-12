@@ -2,19 +2,16 @@ import Buffer from "buffer";
 
 export { derToJose, joseToDer };
 
-
 function getParamSize(keySize) {
   var result = ((keySize / 8) | 0) + (keySize % 8 === 0 ? 0 : 1);
   return result;
 }
 
-
 var paramBytesForAlg = {
   ES256: getParamSize(256),
   ES384: getParamSize(384),
-  ES512: getParamSize(521)
+  ES512: getParamSize(521),
 };
-
 
 function getParamBytesForAlg(alg) {
   var paramBytes = paramBytesForAlg[alg];
@@ -25,34 +22,27 @@ function getParamBytesForAlg(alg) {
   throw new Error('Unknown algorithm "' + alg + '"');
 }
 
-
 var MAX_OCTET = 0x80,
   CLASS_UNIVERSAL = 0,
   PRIMITIVE_BIT = 0x20,
   TAG_SEQ = 0x10,
   TAG_INT = 0x02,
-  ENCODED_TAG_SEQ = (TAG_SEQ | PRIMITIVE_BIT) | (CLASS_UNIVERSAL << 6),
+  ENCODED_TAG_SEQ = TAG_SEQ | PRIMITIVE_BIT | (CLASS_UNIVERSAL << 6),
   ENCODED_TAG_INT = TAG_INT | (CLASS_UNIVERSAL << 6);
 
-
 function base64Url(base64) {
-  return base64
-    .replace(/=/g, '')
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_');
+  return base64.replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
 }
-
 
 function signatureAsBuffer(signature) {
   if (Buffer.isBuffer(signature)) {
     return signature;
-  } else if ('string' === typeof signature) {
-    return Buffer.from(signature, 'base64');
+  } else if ("string" === typeof signature) {
+    return Buffer.from(signature, "base64");
   }
 
-  throw new TypeError('ECDSA signature must be a Base64 string or a Buffer');
+  throw new TypeError("ECDSA signature must be a Base64 string or a Buffer");
 }
-
 
 function derToJose(signature, alg) {
   signature = signatureAsBuffer(signature);
@@ -75,7 +65,13 @@ function derToJose(signature, alg) {
   }
 
   if (inputLength - offset < seqLength) {
-    throw new Error('"seq" specified length of "' + seqLength + '", only "' + (inputLength - offset) + '" remaining');
+    throw new Error(
+      '"seq" specified length of "' +
+        seqLength +
+        '", only "' +
+        (inputLength - offset) +
+        '" remaining',
+    );
   }
 
   if (signature[offset++] !== ENCODED_TAG_INT) {
@@ -85,11 +81,23 @@ function derToJose(signature, alg) {
   var rLength = signature[offset++];
 
   if (inputLength - offset - 2 < rLength) {
-    throw new Error('"r" specified length of "' + rLength + '", only "' + (inputLength - offset - 2) + '" available');
+    throw new Error(
+      '"r" specified length of "' +
+        rLength +
+        '", only "' +
+        (inputLength - offset - 2) +
+        '" available',
+    );
   }
 
   if (maxEncodedParamLength < rLength) {
-    throw new Error('"r" specified length of "' + rLength + '", max of "' + maxEncodedParamLength + '" is acceptable');
+    throw new Error(
+      '"r" specified length of "' +
+        rLength +
+        '", max of "' +
+        maxEncodedParamLength +
+        '" is acceptable',
+    );
   }
 
   var rOffset = offset;
@@ -102,18 +110,34 @@ function derToJose(signature, alg) {
   var sLength = signature[offset++];
 
   if (inputLength - offset !== sLength) {
-    throw new Error('"s" specified length of "' + sLength + '", expected "' + (inputLength - offset) + '"');
+    throw new Error(
+      '"s" specified length of "' +
+        sLength +
+        '", expected "' +
+        (inputLength - offset) +
+        '"',
+    );
   }
 
   if (maxEncodedParamLength < sLength) {
-    throw new Error('"s" specified length of "' + sLength + '", max of "' + maxEncodedParamLength + '" is acceptable');
+    throw new Error(
+      '"s" specified length of "' +
+        sLength +
+        '", max of "' +
+        maxEncodedParamLength +
+        '" is acceptable',
+    );
   }
 
   var sOffset = offset;
   offset += sLength;
 
   if (offset !== inputLength) {
-    throw new Error('Expected to consume entire buffer, but "' + (inputLength - offset) + '" bytes remain');
+    throw new Error(
+      'Expected to consume entire buffer, but "' +
+        (inputLength - offset) +
+        '" bytes remain',
+    );
   }
 
   var rPadding = paramBytes - rLength,
@@ -124,21 +148,30 @@ function derToJose(signature, alg) {
   for (offset = 0; offset < rPadding; ++offset) {
     dst[offset] = 0;
   }
-  signature.copy(dst, offset, rOffset + Math.max(-rPadding, 0), rOffset + rLength);
+  signature.copy(
+    dst,
+    offset,
+    rOffset + Math.max(-rPadding, 0),
+    rOffset + rLength,
+  );
 
   offset = paramBytes;
 
   for (var o = offset; offset < o + sPadding; ++offset) {
     dst[offset] = 0;
   }
-  signature.copy(dst, offset, sOffset + Math.max(-sPadding, 0), sOffset + sLength);
+  signature.copy(
+    dst,
+    offset,
+    sOffset + Math.max(-sPadding, 0),
+    sOffset + sLength,
+  );
 
-  dst = dst.toString('base64');
+  dst = dst.toString("base64");
   dst = base64Url(dst);
 
   return dst;
 }
-
 
 function countPadding(buf, start, stop) {
   var padding = 0;
@@ -154,14 +187,21 @@ function countPadding(buf, start, stop) {
   return padding;
 }
 
-
 function joseToDer(signature, alg) {
   signature = signatureAsBuffer(signature);
   var paramBytes = getParamBytesForAlg(alg);
 
   var signatureBytes = signature.length;
   if (signatureBytes !== paramBytes * 2) {
-    throw new TypeError('"' + alg + '" signatures must be "' + paramBytes * 2 + '" bytes, saw "' + signatureBytes + '"');
+    throw new TypeError(
+      '"' +
+        alg +
+        '" signatures must be "' +
+        paramBytes * 2 +
+        '" bytes, saw "' +
+        signatureBytes +
+        '"',
+    );
   }
 
   var rPadding = countPadding(signature, 0, paramBytes);
@@ -207,5 +247,3 @@ function joseToDer(signature, alg) {
 
   return dst;
 }
-
-

@@ -9,13 +9,12 @@ export default function component() {
       const auth = createAuth(publicKey, users, isExpress);
       app.use(auth.initialize());
       return auth;
-    }
+    },
   };
 }
 
-
 function createAuth(publicKey, users, isExpress) {
-  const allowed = new Map(users.map(u => [userToBasicHeader(u), u]));
+  const allowed = new Map(users.map((u) => [userToBasicHeader(u), u]));
 
   return {
     initialize() {
@@ -25,10 +24,11 @@ function createAuth(publicKey, users, isExpress) {
           req.actor = allowed.get(req.headers.authorization);
         }
 
-        // try Bearer jwt 
+        // try Bearer jwt
         if (publicKey && !req.actor) {
           try {
-            const [strategy, token] = req.headers.authorization?.split(" ") ?? [];
+            const [strategy, token] =
+              req.headers.authorization?.split(" ") ?? [];
             if (strategy === "Bearer") {
               req.actor = jwt.verify(token, publicKey, "ES256").body.toJSON();
             }
@@ -43,7 +43,7 @@ function createAuth(publicKey, users, isExpress) {
         }
 
         return next();
-      }
+      };
     },
     authenticate() {
       return isExpress ? authenticateExpress : authenticateRestana;
@@ -54,9 +54,15 @@ function createAuth(publicKey, users, isExpress) {
           throw new Error("Missing actor role information on request object");
         }
 
-        if (!role) { role = 0 };
-        if (!Array.isArray(role)) { role = [role]; }
-        if (role.length === 0) { return next(); }
+        if (!role) {
+          role = 0;
+        }
+        if (!Array.isArray(role)) {
+          role = [role];
+        }
+        if (role.length === 0) {
+          return next();
+        }
         for (let i = 0; i < role.length; i++) {
           if (hasRole(role[i], req.actor.roles)) {
             return next();
@@ -69,10 +75,9 @@ function createAuth(publicKey, users, isExpress) {
         e.message = "Forbidden";
         return next(e);
       };
-    }
-  }
+    },
+  };
 }
-
 
 function authenticateExpress(req, res, next) {
   if (req.actor) {
@@ -85,12 +90,11 @@ function authenticateExpress(req, res, next) {
     return next();
   } else {
     res
-      .set('WWW-Authenticate', 'Basic realm="401"')
+      .set("WWW-Authenticate", 'Basic realm="401"')
       .status(401)
-      .send('Authentication required.');
+      .send("Authentication required.");
   }
 }
-
 
 function authenticateRestana(req, res, next) {
   if (req.actor) {
@@ -102,16 +106,14 @@ function authenticateRestana(req, res, next) {
     }
     return next();
   } else {
-    const headers = { 'WWW-Authenticate': 'Basic realm="401"' };
-    res.send('Authentication required.', 401, headers);
+    const headers = { "WWW-Authenticate": 'Basic realm="401"' };
+    res.send("Authentication required.", 401, headers);
   }
 }
-
 
 function expandNewlineLiterals(str) {
   return !str ? str : str.replace(/\\n/g, "\n");
 }
-
 
 function extractUsers(s) {
   if (!s) return [];
@@ -121,12 +123,13 @@ function extractUsers(s) {
     return s
       .split(";")
       .map((w) => w.split(":"))
-      .map(([username, password, roles]) =>
-        ({ username, password, roles: Number.parseInt(roles) })
-      );
+      .map(([username, password, roles]) => ({
+        username,
+        password,
+        roles: Number.parseInt(roles),
+      }));
   }
 }
-
 
 function hasRole(role, user) {
   if (!(role > -1)) return false;
@@ -139,29 +142,27 @@ function hasRole(role, user) {
   return !!(roles & (1 << role));
 }
 
-
 function isExpressApp(router) {
-  return isExpressRouter(router) &&
+  return (
+    isExpressRouter(router) &&
     isFunction(router.get) &&
     isFunction(router.set) &&
     isFunction(router.enabled) &&
-    isFunction(router.disabled);
-};
-
+    isFunction(router.disabled)
+  );
+}
 
 function isExpressRouter(router) {
   return isFunction(router) && isFunction(router.param);
-};
-
-
-function isFunction(value) {
-  return typeof value === 'function';
 }
 
+function isFunction(value) {
+  return typeof value === "function";
+}
 
 function userToBasicHeader(user) {
-  const b64 = Buffer
-    .from(`${user.username}:${user.password}`)
-    .toString('base64');
+  const b64 = Buffer.from(`${user.username}:${user.password}`).toString(
+    "base64",
+  );
   return `Basic ${b64}`;
 }
