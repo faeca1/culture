@@ -1,48 +1,58 @@
 const _ = require("@faeca1/matter").default;
-const apiSchemaBuilder = require("api-schema-builder");
+const packages = { apiSchemaBuilder: require("api-schema-builder") };
 const docs = require("./spec");
 
+main();
 
-function handlers() {
-  return _.mapValues(_.web.handlrr)({
-    getPersonById(req) {
-      const id = req.params.id;
-      const person = { id, name: "pizza", age: 10 };
-      return _.web.response.ok(person);
-    }
-  });
+async function main() {
+  const system = _.system(definition(), { packages });
+  const { logger } = await _.system.runner(system).start();
+  logger.info("system started");
 }
 
-
-function _C([init, dependsOn, comesAfter]) {
-  return { init, dependsOn, comesAfter };
+function getPersons(__, __) {
+  const persons = [
+    { id: 1, name: "pizza", age: 10 },
+    { id: 2, name: "pasta", age: 10 },
+  ];
+  return _.web.response.ok(persons);
 }
 
+function getPersonById(__, req) {
+  const id = req.params.id;
+  const person = { id, name: "pizza", age: 10 };
+  return _.web.response.ok(person);
+}
 
-const definition = {
-  config: {
+function definition() {
+  const config = {
     http: {
-      auth: { basic: { allowed: 'user:ssshhh:3' } },
+      auth: { basic: { allowed: "user:ssshhh:3" } },
       routes: { roles: { ping: 0, read: 1 } },
       swagger: { buildResponses: false },
     },
     logger: { level: "debug", name: "pizza" },
-  },
-  docs,
-  http: {
-    auth: _C(['auth', ['config', 'app'], 'reqLogger']),
-    app: _C(['restana.app', ['config', 'logger']]),
-    datadog: _C(['restana.datadog', 'app']),
-    handlers,
-    reqLogger: _C(['restana.logger', ['app', 'logger']]),
-    routes: _C(['restana.routes', ['app', 'auth', 'config', 'docs', 'handlers'], ['datadog', 'swagger']]),
-    server: _C(['restana.server', ['app', 'logger', 'config'], 'routes']),
-    swagger: _C(['restana.swagger', ['app', 'docs', 'config'], 'auth']),
-  },
-  logger: ['bole', 'config'],
-};
+  };
 
-const system = _.system(definition, { packages: { apiSchemaBuilder } });
-_.system.runner(system)
-  .start()
-  .then(s => s.logger.info("system started"));
+  const core = {
+    http: _.system.toDefinitions({
+      auth: ["auth", ["config", "app"], "reqLogger"],
+      app: ["restana.app", ["config", "logger"]],
+      datadog: ["restana.datadog", "app"],
+      docs,
+      reqLogger: ["restana.logger", ["app", "logger"]],
+      routes: [
+        "restana.routes",
+        ["app", "auth", "config", "docs", "handlers"],
+        ["datadog", "swagger"],
+      ],
+      server: ["restana.server", ["app", "logger", "config"], "routes"],
+      swagger: ["restana.swagger", ["app", "docs", "config"], "auth"],
+    }),
+    logger: ["bole", "config"],
+  };
+
+  const handlers = _.web.handlers({ getPersons, getPersonById });
+
+  return { config, ...core, handlers };
+}

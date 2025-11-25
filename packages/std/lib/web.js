@@ -4,7 +4,7 @@ export default {
   bindr: _.curry(bindDependencies),
   check: { wasFound, wasSuccessful },
   errors: E,
-  handlers: _.curry(handlers),
+  handlers: (fns) => _.partialRight(toHandlers, [fns]),
   handlr: handlr,
   handlrr: handlrr,
   paginate: _.curry(toPagination),
@@ -24,6 +24,7 @@ export default {
     isResponse,
     header: _.curry(header),
   },
+  toHandlers: _.curry(toHandlers),
 };
 
 function arrayifyBody(obj) {
@@ -155,7 +156,6 @@ function handlr(fn) {
       }
 
       // resp is now in standard form;
-
       const { status, headers, body = null } = resp;
       return res.send(body, status, headers);
     } catch (e) {
@@ -168,7 +168,7 @@ function handlrr(fn) {
   return handlr((req) => fn(init(req)));
 }
 
-function handlers(deps, functions) {
+function toHandlers(deps, functions) {
   // create middleware fns of the form (req, res, next) -> void
   const toMiddleware = (fn) => handlrr(_.partial(fn, [deps]));
   return _.mapValues(toMiddleware)(functions);

@@ -20,12 +20,10 @@ const STATE = {
   STOPPED: 4,
 };
 
-
 function system(definition = {}, opts) {
   const s = create(definition, opts);
   return _toObject(s);
 }
-
 
 function _toObject(definitions) {
   let state = STATE.NEVER_STARTED;
@@ -35,7 +33,7 @@ function _toObject(definitions) {
     definitions,
     state,
     include(...others) {
-      const otherDefinitions = others.map(o => o.definitions);
+      const otherDefinitions = others.map((o) => o.definitions);
       const result = merge(definitions, ...otherDefinitions);
       return _toObject(result);
     },
@@ -51,20 +49,20 @@ function _toObject(definitions) {
       state = STATE.STOPPING;
       await stop(definitions);
       state = STATE.STOPPED;
-    }
-  }
+    },
+  };
 }
-
 
 function toDefinition(opts) {
   if (Array.isArray(opts)) {
     const [init, dependsOn, comesAfter] = opts;
     return { init, dependsOn, comesAfter };
+  } else if (U.isFunction(opts)) {
+    return { init: opts };
   } else {
     return { init: () => opts };
   }
 }
-
 
 function toDefinitions(obj) {
   return Object.entries(obj).reduce((acc, [k, v]) => {
@@ -72,7 +70,6 @@ function toDefinitions(obj) {
     return acc;
   }, {});
 }
-
 
 // create produces a structured definitions object from the input
 //
@@ -93,13 +90,11 @@ function toDefinitions(obj) {
 // and a definitions object is an object mapping names to definitions
 //
 function create(data = {}, opts) {
-  const definitions =
-    Object.entries(data)
-      .flatMap(x => _toDefinition(x, opts))
-      .map(_validateDefinition);
-  return Object.fromEntries(definitions.map(d => [d.name, d]));
+  const definitions = Object.entries(data)
+    .flatMap((x) => _toDefinition(x, opts))
+    .map(_validateDefinition);
+  return Object.fromEntries(definitions.map((d) => [d.name, d]));
 }
-
 
 function merge(...definitionsObjs) {
   const target = {};
@@ -111,7 +106,6 @@ function merge(...definitionsObjs) {
   }
   return target;
 }
-
 
 async function start(definitions) {
   _validateDefinitions(definitions);
@@ -127,33 +121,57 @@ async function start(definitions) {
   return system;
 }
 
-
 async function stop(definitions) {
   for (const componentName of _sortComponents(definitions)) {
     await definitions[componentName]?.component?.stop?.();
   }
 }
 
-
 function _conformComponent(c, opts) {
-  if (!c || (U.hasProp(c, 'init') && !c.init)) return;
+  if (!c || (U.hasProp(c, "init") && !c.init)) return;
 
-  if (U.isFunction(c)) { return { start: c }; }
-  if (U.isFunction(c.init)) { return { start: c.init }; }
-  if (U.isFunction(c.init?.start)) { return c.init; }
+  if (U.isFunction(c)) {
+    return { start: c };
+  }
+  if (U.isFunction(c.init)) {
+    return { start: c.init };
+  }
+  if (U.isFunction(c.init?.start)) {
+    return c.init;
+  }
 
-  if (U.isString(c.init)) { return getComponents(c.init, opts); }
+  if (U.isString(c.init)) {
+    return getComponents(c.init, opts);
+  }
 
-  if (c.init) return { start() { return c.init; } }
-  if (c.dependsOn) return { start(ds) { return ds; } };
-  if (c.comesAfter) return { start() { return {}; } };
+  if (c.init)
+    return {
+      start() {
+        return c.init;
+      },
+    };
+  if (c.dependsOn)
+    return {
+      start(ds) {
+        return ds;
+      },
+    };
+  if (c.comesAfter)
+    return {
+      start() {
+        return {};
+      },
+    };
 
-  return { start() { return c; } };
+  return {
+    start() {
+      return c;
+    },
+  };
 }
 
-
 function _conformDependency(dependency) {
-  if (typeof dependency === 'string') {
+  if (typeof dependency === "string") {
     return { destination: dependency, component: dependency };
   }
 
@@ -161,11 +179,15 @@ function _conformDependency(dependency) {
     return dependency;
   }
 
-  if (dependency?.component && U.hasProp(dependency, 'source')) {
-    return { destination: dependency.component, component: dependency.component, source: dependency.source };
+  if (dependency?.component && U.hasProp(dependency, "source")) {
+    return {
+      destination: dependency.component,
+      component: dependency.component,
+      source: dependency.source,
+    };
   }
 
-  if (typeof dependency === 'object' && Object.keys(dependency).length > 0) {
+  if (typeof dependency === "object" && Object.keys(dependency).length > 0) {
     return Object.entries(dependency).map(([k, v]) => {
       if (v.includes(".")) {
         const [component, ...others] = v.split(".");
@@ -180,55 +202,48 @@ function _conformDependency(dependency) {
   return dependency;
 }
 
-
 function _getDependencies(definitions, system, name) {
-  return definitions[name].dependencies
-    .reduce((acc, dep) => {
-      const componentName = dep.component;
+  return definitions[name].dependencies.reduce((acc, dep) => {
+    const componentName = dep.component;
 
-      const source =
-        (!U.hasProp(dep, 'source') && definitions[componentName].scoped)
-          ? name
-          : dep.source;
+    const source =
+      !U.hasProp(dep, "source") && definitions[componentName].scoped ? name : dep.source;
 
-      const rawDependency = U.getProp(system, componentName);
-      const dependency = source ? U.getProp(rawDependency, source) : rawDependency;
-      U.setProp(acc, dep.destination, dependency);
+    const rawDependency = U.getProp(system, componentName);
+    const dependency = source ? U.getProp(rawDependency, source) : rawDependency;
+    U.setProp(acc, dep.destination, dependency);
 
-      return acc;
-    }, {});
-};
-
+    return acc;
+  }, {});
+}
 
 function _hasSubComponents(component) {
   if (Array.isArray(component)) return false;
   return Object.entries(component).filter(_isSubComponent).length > 0;
 }
 
-
 function _isSubComponent([k, v]) {
   if (["init", "start"].includes(k)) return false;
-  return U.isFunction(v)
-    || U.isFunction(v?.init)
-    || U.isFunction(v?.init?.start)
-    || ((typeof v?.init === 'string') && v?.dependsOn);
+  return (
+    U.isFunction(v) ||
+    U.isFunction(v?.init) ||
+    U.isFunction(v?.init?.start) ||
+    (typeof v?.init === "string" && v?.dependsOn)
+  );
 }
-
 
 function _sortComponents(definitions) {
-  return toposort(definitions, (v) => v.dependencies.map(d => d.component));
+  return toposort(definitions, (v) => v.dependencies.map((d) => d.component));
 }
-
 
 function _splitOffSubComponents(component) {
   const subComponents = Object.entries(component).filter(_isSubComponent);
   const others = { ...component };
-  for (const [k,] of subComponents) {
+  for (const [k] of subComponents) {
     delete others[k];
   }
   return [subComponents, others];
 }
-
 
 function _toDefinition([k, v], opts) {
   if (!_hasSubComponents(v)) {
@@ -241,14 +256,16 @@ function _toDefinition([k, v], opts) {
       name: k,
       component: _conformComponent(v, opts),
       scoped: (k === "config" && v.scoped !== false) || !!v.scoped,
-      dependencies: dependencies.flatMap(_conformDependency)
+      dependencies: dependencies.flatMap(_conformDependency),
     };
   }
 
   // separate out and create all definitions
   const [subComponents, others] = _splitOffSubComponents(v);
   const mainDefinition = _toDefinition([k, others], opts);
-  const subComponentDefinitions = subComponents.map(([vk, vv]) => _toDefinition([`${k}.${vk}`, vv], opts))
+  const subComponentDefinitions = subComponents.map(([vk, vv]) =>
+    _toDefinition([`${k}.${vk}`, vv], opts),
+  );
 
   // use 'local' sub-components over global ones.
   const subObj = Object.fromEntries(subComponents);
@@ -261,47 +278,56 @@ function _toDefinition([k, v], opts) {
   }
 
   // ensure main obj 'dependsOn' subObjs
-  const subDepsForMain = subComponents.map(([vk, __]) => ({ destination: vk, component: `${k}.${vk}` }));
+  const subDepsForMain = subComponents.map(([vk, __]) => ({
+    destination: vk,
+    component: `${k}.${vk}`,
+  }));
   mainDefinition.dependencies.push(...subDepsForMain);
   const _start = mainDefinition.component.start;
 
   // patch start function to attach sub components back onto object
   mainDefinition.component.start = async function (deps) {
     const obj = await _start(deps);
-    for (const s in deps) { if (subObj[s]) { obj[s] = deps[s]; } }
+    for (const s in deps) {
+      if (subObj[s]) {
+        obj[s] = deps[s];
+      }
+    }
     return obj;
-  }
+  };
   return [mainDefinition, ...subComponentDefinitions];
 }
-
 
 function _validateDefinition(definition) {
   if (!definition.component) {
     throw new Error(`Component ${definition.name} is null or undefined`);
   }
 
-  const deps = definition.dependencies.map(d => d.destination);
+  const deps = definition.dependencies.map((d) => d.destination);
   deps.forEach((d, idx) => {
     if (deps.indexOf(d) !== idx) {
       throw new Error(`Component ${definition.name} has a duplicate dependency ${d}`);
     }
-  })
+  });
 
   for (const d of definition.dependencies) {
     if (!d.component) {
-      throw new Error(`Component ${definition.name} has an invalid dependency ${JSON.stringify(d)}`);
+      throw new Error(
+        `Component ${definition.name} has an invalid dependency ${JSON.stringify(d)}`,
+      );
     }
   }
 
   return definition;
 }
 
-
 function _validateDefinitions(definitions) {
   for (const [name, { dependencies }] of Object.entries(definitions)) {
     for (const { component } of dependencies) {
       if (!U.hasProp(definitions, component)) {
-        throw new Error(`Component ${name} has an unsatisfied dependency on ${component}`);
+        throw new Error(
+          `Component ${name} has an unsatisfied dependency on ${component}`,
+        );
       }
     }
   }
