@@ -10,7 +10,7 @@ async function main() {
   logger.info("system started");
 }
 
-function getPersons(__, __) {
+function getPersons() {
   const persons = [
     { id: 1, name: "pizza", age: 10 },
     { id: 2, name: "pasta", age: 10 },
