@@ -33,7 +33,7 @@ function _toObject(definitions) {
     definitions,
     state,
     include(...others) {
-      const otherDefinitions = others.map((o) => o.definitions);
+      const otherDefinitions = others.map(o => o.definitions);
       const result = merge(definitions, ...otherDefinitions);
       return _toObject(result);
     },
@@ -91,9 +91,9 @@ function toDefinitions(obj) {
 //
 function create(data = {}, opts) {
   const definitions = Object.entries(data)
-    .flatMap((x) => _toDefinition(x, opts))
+    .flatMap(x => _toDefinition(x, opts))
     .map(_validateDefinition);
-  return Object.fromEntries(definitions.map((d) => [d.name, d]));
+  return Object.fromEntries(definitions.map(d => [d.name, d]));
 }
 
 function merge(...definitionsObjs) {
@@ -138,6 +138,10 @@ function _conformComponent(c, opts) {
   }
   if (U.isFunction(c.init?.start)) {
     return c.init;
+  }
+
+  if (U.isString(c)) {
+    return getComponents(c, opts);
   }
 
   if (U.isString(c.init)) {
@@ -233,7 +237,7 @@ function _isSubComponent([k, v]) {
 }
 
 function _sortComponents(definitions) {
-  return toposort(definitions, (v) => v.dependencies.map((d) => d.component));
+  return toposort(definitions, v => v.dependencies.map(d => d.component));
 }
 
 function _splitOffSubComponents(component) {
@@ -251,13 +255,22 @@ function _toDefinition([k, v], opts) {
       const [init, dependsOn, comesAfter] = v;
       v = { init, dependsOn, comesAfter };
     }
-    const dependencies = U.arrayify(v.dependsOn).concat(U.arrayify(v.comesAfter));
-    return {
+
+    const dependencies = new Set([
+      ...U.arrayify(v.dependsOn),
+      ...U.arrayify(v.comesAfter),
+    ]);
+    if (k !== "config" && opts.autoConfig === true) {
+      dependencies.add("config");
+    }
+
+    const comp = {
       name: k,
       component: _conformComponent(v, opts),
       scoped: (k === "config" && v.scoped !== false) || !!v.scoped,
-      dependencies: dependencies.flatMap(_conformDependency),
+      dependencies: [...dependencies].flatMap(_conformDependency),
     };
+    return comp;
   }
 
   // separate out and create all definitions
@@ -303,7 +316,7 @@ function _validateDefinition(definition) {
     throw new Error(`Component ${definition.name} is null or undefined`);
   }
 
-  const deps = definition.dependencies.map((d) => d.destination);
+  const deps = definition.dependencies.map(d => d.destination);
   deps.forEach((d, idx) => {
     if (deps.indexOf(d) !== idx) {
       throw new Error(`Component ${definition.name} has a duplicate dependency ${d}`);

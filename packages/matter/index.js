@@ -5,7 +5,7 @@ const pkgs = std.packages;
 
 std.config = config;
 std.system = system;
-Object.keys(System).forEach((k) => {
+Object.keys(System).forEach(k => {
   std.system[k] = System[k];
 });
 
@@ -16,10 +16,13 @@ export * from "@faeca1/std";
 function system(definition, opts) {
   const packages = { ...pkgs, ...opts?.packages };
   let obj = definition;
-  if (opts?.configure !== false) {
+
+  const autoConfig = opts?.configure !== false;
+  if (autoConfig) {
     const wrapped = config(definition.config);
 
     obj = { ...definition, config: wrapped };
   }
-  return System(obj, { ...opts, packages });
+
+  return System(obj, { ...opts, packages, autoConfig });
 }

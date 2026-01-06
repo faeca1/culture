@@ -31,28 +31,25 @@ function definition() {
       routes: { roles: { ping: 0, read: 1 } },
       swagger: { buildResponses: false },
     },
-    logger: { level: "debug", name: "pizza" },
+    logger: { level: "debug", name: "sample-app" },
   };
 
-  const core = {
-    http: _.system.toDefinitions({
-      auth: ["auth", ["config", "app"], "reqLogger"],
-      app: ["restana.app", ["config", "logger"]],
-      datadog: ["restana.datadog", "app"],
-      docs,
-      reqLogger: ["restana.logger", ["app", "logger"]],
-      routes: [
-        "restana.routes",
-        ["app", "auth", "config", "docs", "handlers"],
-        ["datadog", "swagger"],
-      ],
-      server: ["restana.server", ["app", "logger", "config"], "routes"],
-      swagger: ["restana.swagger", ["app", "docs", "config"], "auth"],
-    }),
-    logger: ["bole", "config"],
-  };
+  const http = _.system.toDefinitions({
+    auth: ["auth", "app", "reqLogger"],
+    app: ["restana.app", "logger"],
+    datadog: ["restana.datadog", "app"],
+    docs,
+    reqLogger: ["restana.logger", ["app", "logger"]],
+    routes: [
+      "restana.routes",
+      ["app", "auth", "docs", "handlers"],
+      ["datadog", "swagger"],
+    ],
+    server: ["restana.server", ["app", "logger"], "routes"],
+    swagger: ["restana.swagger", ["app", "docs"], "auth"],
+  });
 
   const handlers = _.web.handlers({ getPersons, getPersonById });
 
-  return { config, ...core, handlers };
+  return { config, http, logger: "bole", handlers };
 }
