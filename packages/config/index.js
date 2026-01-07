@@ -10,7 +10,7 @@ component.processors = processors;
 export default component;
 export { of, configurator, loaders, processors };
 
-function create(path, opts = {}) {
+function create(path = {}, opts = {}) {
   const defaults = {
     path: process.env.CONFIGURATOR__PATH,
     prefix: process.env.CONFIGURATOR__PREFIX,
