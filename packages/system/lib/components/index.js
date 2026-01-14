@@ -11,20 +11,7 @@ import * as restana from "./restana/index.js";
 import slack from "./slack.js";
 
 export default get;
-export {
-  auth,
-  bole,
-  boss,
-  duck,
-  express,
-  google,
-  pg,
-  pino,
-  postgres,
-  restana,
-  slack
-};
-
+export { auth, bole, boss, duck, express, google, pg, pino, postgres, restana, slack };
 
 function get(name, opts) {
   const packages = opts?.packages ?? {};
@@ -59,16 +46,22 @@ function get(name, opts) {
     case "postgres":
       return postgres(packages);
     case "restana.app":
+    case "app":
       return restana.app(packages);
     case "restana.datadog":
+    case "datadog":
       return restana.datadog();
     case "restana.logger":
+    case "reqLog":
       return restana.logger();
     case "restana.routes":
+    case "routes":
       return restana.routes();
     case "restana.server":
+    case "server":
       return restana.server();
     case "restana.swagger":
+    case "swagger":
       return restana.swagger(packages);
     case "slack":
       return slack();
