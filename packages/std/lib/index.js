@@ -23,6 +23,7 @@ _.asyncIterables = asyncIterables;
 _.bindValues = _.curry(U.bindValues);
 _.clock = clock;
 _.collections = collections;
+_.componentize = U.componentize;
 _.csp = csp;
 _.debug = debug;
 _.fetch = Fetch;
