@@ -35,18 +35,14 @@ function definition() {
   };
 
   const http = _.system.toDefinitions({
-    auth: ["auth", "app", "reqLogger"],
-    app: ["restana.app", "logger"],
-    datadog: ["restana.datadog", "app"],
+    auth: ["auth", "app", "reqLog"],
+    app: ["app", "logger"],
+    datadog: ["datadog", "app"],
     docs,
-    reqLogger: ["restana.logger", ["app", "logger"]],
-    routes: [
-      "restana.routes",
-      ["app", "auth", "docs", "handlers"],
-      ["datadog", "swagger"],
-    ],
-    server: ["restana.server", ["app", "logger"], "routes"],
-    swagger: ["restana.swagger", ["app", "docs"], "auth"],
+    reqLog: ["reqLog", ["app", "logger"]],
+    routes: ["routes", ["app", "auth", "docs", "handlers"], ["datadog", "swagger"]],
+    server: ["server", ["app", "logger"], "routes"],
+    swagger: ["swagger", ["app", "docs"], "auth"],
   });
 
   const handlers = _.web.handlers({ getPersons, getPersonById });
