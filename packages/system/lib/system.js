@@ -223,6 +223,7 @@ function _getDependencies(definitions, system, name) {
 
 function _hasSubComponents(component) {
   if (Array.isArray(component)) return false;
+  if (U.isFunction(component)) return false;
   return Object.entries(component).filter(_isSubComponent).length > 0;
 }
 
@@ -260,7 +261,7 @@ function _toDefinition([k, v], opts) {
       ...U.arrayify(v.dependsOn),
       ...U.arrayify(v.comesAfter),
     ]);
-    if (k !== "config" && opts.autoConfig === true) {
+    if (k !== "config" && opts?.autoConfig === true) {
       dependencies.add("config");
     }
 

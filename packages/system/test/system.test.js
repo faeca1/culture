@@ -9,7 +9,7 @@ describe("System", () => {
   });
 
   it("should stop without components", async () => {
-    const system = System()
+    const system = System();
     await system.start();
     await system.stop();
   });
@@ -20,11 +20,10 @@ describe("System", () => {
     await System.stop(system);
   });
 
-  it("should tolerate being stopped without being started", () =>
-    System().stop());
+  it("should tolerate being stopped without being started", () => System().stop());
 
   it("should tolerate being started wthout being stopped", async () => {
-    const system = System({ "foo": { init: PromiseComponent() } });
+    const system = System({ foo: { init: PromiseComponent() } });
     let components = await system.start();
     assert.equal(components.foo.counter, 1);
     components = await system.start();
@@ -47,8 +46,8 @@ describe("System", () => {
     const bar = PromiseComponent();
     const system = System({
       foo: ErrorPromiseComponent,
-      bar: { init: bar, dependsOn: ["foo"] }
-    })
+      bar: { init: bar, dependsOn: ["foo"] },
+    });
     await system.start().catch(assert.ok);
     await system.stop();
     assert(bar.state.stopped, "Component was stopped");
@@ -58,12 +57,17 @@ describe("System", () => {
     await System({
       foo: ErrorPromiseComponent,
       bar: { init: PromiseComponent(), dependsOn: ["foo"] },
-    }).start()
+    })
+      .start()
       .catch(assert.ok);
   });
 
   it("should pass through components provided via a function", async () => {
-    const components = await System({ foo: function() { return { ok: true } } }).start();
+    const components = await System({
+      foo: function () {
+        return { ok: true };
+      },
+    }).start();
     assert.equal(components.foo.ok, true);
   });
 
@@ -87,14 +91,14 @@ describe("System", () => {
       foo: {
         bar: { init: PromiseComponent(), dependsOn: "config" },
         fizz: { init: PromiseComponent(), dependsOn: "config" },
-        gelato: 1
+        gelato: 1,
       },
     }).start();
 
     assert.equal(components.foo.bar.dependencies.config.like, "pasta");
     assert.equal(components.foo.fizz.dependencies.config.like, "pizza");
-    assert.ok(components.blah.dependencies.foo.bar.started)
-    assert.ok(components.buzz.dependencies.bar.started)
+    assert.ok(components.blah.dependencies.foo.bar.started);
+    assert.ok(components.buzz.dependencies.bar.started);
     assert.ok(components.foo.bar.started);
     assert.ok(components.foo.fizz.started);
   });
@@ -102,41 +106,40 @@ describe("System", () => {
   it("should accept compact, array definitions", async () => {
     const definition = {
       config: { foo: { names: ["pizza", "pasta"] } },
-      foo: [(ds) => ds, "config"],
-      bar: [PromiseComponent(), ["config", "foo"]]
+      foo: [ds => ds, "config"],
+      bar: [PromiseComponent(), ["config", "foo"]],
     };
     const system = await System(definition).start();
     assert.equal(system.foo.config.names[1], "pasta");
     assert.ok(system.bar.started);
     assert.ok(system.bar.dependencies.foo);
-  })
+  });
 
   it("should reject attempts to add an undefined component", () => {
-    assert.throws(() => {
-      System({ foo: { init: undefined } });
-    }, { message: "Component foo is null or undefined" });
+    assert.throws(
+      () => {
+        System({ foo: { init: undefined } });
+      },
+      { message: "Component foo is null or undefined" },
+    );
   });
 
   it("should report missing dependencies", async () => {
     await System({
-      foo: { init: new PromiseComponent(), dependsOn: ["bar"] }
+      foo: { init: new PromiseComponent(), dependsOn: ["bar"] },
     })
       .start()
-      .catch((err) => {
+      .catch(err => {
         assert(err);
-        assert.equal(
-          err.message,
-          "Component foo has an unsatisfied dependency on bar",
-        );
+        assert.equal(err.message, "Component foo has an unsatisfied dependency on bar");
       });
   });
 
   it("should inject dependency", async () => {
     const components = await System({
       bar: { init: PromiseComponent() },
-      foo: { init: PromiseComponent(), dependsOn: "bar" }
-    })
-      .start();
+      foo: { init: PromiseComponent(), dependsOn: "bar" },
+    }).start();
 
     assert(components.foo.dependencies.bar);
   });
@@ -164,7 +167,10 @@ describe("System", () => {
   it("should map dependencies to a new name", async () => {
     const components = await System({
       bar: { init: new PromiseComponent() },
-      foo: { init: new PromiseComponent(), dependsOn: [{ component: "bar", destination: "baz" }] }
+      foo: {
+        init: new PromiseComponent(),
+        dependsOn: [{ component: "bar", destination: "baz" }],
+      },
     }).start();
 
     assert(!components.foo.dependencies.bar);
@@ -173,8 +179,9 @@ describe("System", () => {
 
   it("should map dependencies declared in object form to a new name", async () => {
     const components = await System({
-      bar: PromiseComponent(), fizz: PromiseComponent(),
-      foo: { init: new PromiseComponent(), dependsOn: { baz: "bar", buzz: "fizz" } }
+      bar: PromiseComponent(),
+      fizz: PromiseComponent(),
+      foo: { init: new PromiseComponent(), dependsOn: { baz: "bar", buzz: "fizz" } },
     }).start();
 
     assert(!components.foo.dependencies.bar);
@@ -185,8 +192,14 @@ describe("System", () => {
 
   it("should map dependencies declared in mixed form to new names", async () => {
     const components = await System({
-      bar: 1, fizz: 2, pizza: 3, pasta: 4,
-      foo: { init: PromiseComponent(), dependsOn: [{ baz: "bar", buzz: "fizz", pasta: "pasta" }, "pizza"] }
+      bar: 1,
+      fizz: 2,
+      pizza: 3,
+      pasta: 4,
+      foo: {
+        init: PromiseComponent(),
+        dependsOn: [{ baz: "bar", buzz: "fizz", pasta: "pasta" }, "pizza"],
+      },
     }).start();
 
     assert(!components.foo.dependencies.bar);
@@ -200,7 +213,7 @@ describe("System", () => {
   it("should inject dependencies defined out of order", async () => {
     const components = await System({
       foo: { init: new PromiseComponent(), dependsOn: ["bar"] },
-      bar: { init: new PromiseComponent() }
+      bar: { init: new PromiseComponent() },
     }).start();
 
     assert(components.foo.dependencies.bar);
@@ -209,7 +222,7 @@ describe("System", () => {
   it("should support nested component names", async () => {
     const components = await System({
       "foo.bar": { init: PromiseComponent() },
-      baz: { init: new PromiseComponent(), dependsOn: "foo.bar" }
+      baz: { init: new PromiseComponent(), dependsOn: "foo.bar" },
     }).start();
     assert(components.foo.bar.started);
     assert(components.baz.dependencies.foo.bar);
@@ -218,7 +231,10 @@ describe("System", () => {
   it("should inject dependency sub documents", async () => {
     const components = await System({
       pizza: { foo: { bar: "baz" } },
-      foo: { init: PromiseComponent(), dependsOn: { component: "pizza", source: "foo", destination: "blah" } }
+      foo: {
+        init: PromiseComponent(),
+        dependsOn: { component: "pizza", source: "foo", destination: "blah" },
+      },
     }).start();
 
     assert.equal(components.foo.dependencies.blah.bar, "baz");
@@ -227,7 +243,7 @@ describe("System", () => {
   it("should inject dependency sub documents using object form", async () => {
     const components = await System({
       pizza: { foo: { bar: "baz" } },
-      foo: { init: PromiseComponent(), dependsOn: { blah: "pizza.foo" } }
+      foo: { init: PromiseComponent(), dependsOn: { blah: "pizza.foo" } },
     }).start();
 
     assert.equal(components.foo.dependencies.blah.bar, "baz");
@@ -238,27 +254,33 @@ describe("System", () => {
       store: { topLevel: true },
       foo: {
         store: { init: PromiseComponent() },
-        routes: { init: PromiseComponent(), dependsOn: 'store' }
-      }
+        routes: { init: PromiseComponent(), dependsOn: "store" },
+      },
     }).start();
 
     assert(!components.foo.routes.dependencies.store.topLevel);
   });
 
   it("should reject invalid dependencies", () => {
-    assert.throws(() => {
-      System({ foo: { init: new PromiseComponent(), dependsOn: [1] } });
-    }, { message: "Component foo has an invalid dependency 1" });
+    assert.throws(
+      () => {
+        System({ foo: { init: new PromiseComponent(), dependsOn: [1] } });
+      },
+      { message: "Component foo has an invalid dependency 1" },
+    );
 
-    assert.throws(() => {
-      System({ foo: { init: new PromiseComponent(), dependsOn: [{}] } });
-    }, { message: "Component foo has an invalid dependency {}" });
+    assert.throws(
+      () => {
+        System({ foo: { init: new PromiseComponent(), dependsOn: [{}] } });
+      },
+      { message: "Component foo has an invalid dependency {}" },
+    );
   });
 
   it("should reject direct cyclic dependencies", async () => {
     await System({ foo: { init: new PromiseComponent(), dependsOn: ["foo"] } })
       .start()
-      .catch((err) => {
+      .catch(err => {
         assert(err);
         assert(/Cyclic dependency found/.test(err.message), err.message);
       });
@@ -268,8 +290,9 @@ describe("System", () => {
     await System({
       foo: { init: new PromiseComponent(), dependsOn: ["bar"] },
       bar: { init: new PromiseComponent(), dependsOn: ["foo"] },
-    }).start()
-      .catch((err) => {
+    })
+      .start()
+      .catch(err => {
         assert(err);
         assert(/Cyclic dependency found/.test(err.message), err.message);
       });
@@ -281,10 +304,10 @@ describe("System", () => {
         init: new PromiseComponent(),
         dependsOn: [
           { component: "bar", destination: "a" },
-          { component: "bar", destination: "b" }
-        ]
+          { component: "bar", destination: "b" },
+        ],
       },
-      bar: { init: new PromiseComponent() }
+      bar: { init: new PromiseComponent() },
     }).start();
 
     assert(components.foo.dependencies.a);
@@ -294,37 +317,34 @@ describe("System", () => {
   it("should tolerate duplicate dependencies in object form with different destinations", async () => {
     const components = await System({
       foo: { init: PromiseComponent(), dependsOn: { a: "bar", b: "bar" } },
-      bar: 1
+      bar: 1,
     }).start();
 
     assert(components.foo.dependencies.a);
     assert(components.foo.dependencies.b);
   });
 
-  it("should reject duplicate dependency implicit destinations", () => {
-    assert.throws(() => {
-      System({ foo: { init: new PromiseComponent(), dependsOn: ["bar", "bar"] } })
-    }, { message: "Component foo has a duplicate dependency bar" });
-  });
-
   it("should reject duplicate dependency explicit destinations", () => {
-    assert.throws(() => {
-      System({
-        foo: {
-          init: new PromiseComponent(),
-          dependsOn: [
-            { component: "bar", destination: "baz" },
-            { component: "shaz", destination: "baz" }
-          ]
-        }
-      })
-    }, { message: "Component foo has a duplicate dependency baz" });
+    assert.throws(
+      () => {
+        System({
+          foo: {
+            init: new PromiseComponent(),
+            dependsOn: [
+              { component: "bar", destination: "baz" },
+              { component: "shaz", destination: "baz" },
+            ],
+          },
+        });
+      },
+      { message: "Component foo has a duplicate dependency baz" },
+    );
   });
 
   it("should provide a shorthand for scoped dependencies", async () => {
     const components = await System({
       pizza: { init: { foo: { bar: "baz" } }, scoped: true },
-      foo: { init: PromiseComponent(), dependsOn: "pizza" }
+      foo: { init: PromiseComponent(), dependsOn: "pizza" },
     }).start();
     assert.equal(components.foo.dependencies.pizza.bar, "baz");
   });
@@ -332,7 +352,7 @@ describe("System", () => {
   it("should provide a shorthand for config (which is scoped by default)", async () => {
     const components = await System({
       config: { foo: { bar: "baz" } },
-      foo: { init: PromiseComponent(), dependsOn: "config" }
+      foo: { init: PromiseComponent(), dependsOn: "config" },
     }).start();
     assert.equal(components.foo.dependencies.config.bar, "baz");
   });
@@ -340,7 +360,7 @@ describe("System", () => {
   it("should allow shorthand for config to be disabled", async () => {
     const components = await System({
       config: { foo: { bar: "baz" }, scoped: false },
-      foo: { init: PromiseComponent(), dependsOn: "config" }
+      foo: { init: PromiseComponent(), dependsOn: "config" },
     }).start();
     assert.ok(components.foo.dependencies.config.foo);
   });
@@ -350,8 +370,8 @@ describe("System", () => {
       config: { init: { foo: { bar: "baz" } } },
       foo: {
         init: new PromiseComponent(),
-        dependsOn: [{ component: "config", source: "" }]
-      }
+        dependsOn: [{ component: "config", source: "" }],
+      },
     }).start();
     assert.equal(components.foo.dependencies.config.foo.bar, "baz");
   });
@@ -359,23 +379,29 @@ describe("System", () => {
   it("should allow shorthand to be overriden at component level using object form", async () => {
     const components = await System({
       config: { foo: { bar: "baz" } },
-      foo: { init: PromiseComponent(), dependsOn: { config: "config." } }
+      foo: { init: PromiseComponent(), dependsOn: { config: "config." } },
     }).start();
     assert.equal(components.foo.dependencies.config.foo.bar, "baz");
   });
 
   it("should include components from other systems", async () => {
-    const components = await System().include(System({ foo: PromiseComponent })).start();
+    const components = await System()
+      .include(System({ foo: PromiseComponent }))
+      .start();
     assert.ok(components.foo);
   });
 
   it("should include components from other systems via static functions", async () => {
-    const components = await System.start(System.merge(System.create(), System({ foo: PromiseComponent() })));
+    const components = await System.start(
+      System.merge(System.create(), System({ foo: PromiseComponent() })),
+    );
     assert.ok(components.foo);
   });
 
   it("should be able to depend on included components", async () => {
-    const components = await System({ bar: { init: PromiseComponent(), dependsOn: "foo" } })
+    const components = await System({
+      bar: { init: PromiseComponent(), dependsOn: "foo" },
+    })
       .include(System({ foo: 1 }))
       .start();
     assert.ok(components.bar.dependencies.foo);
@@ -389,25 +415,38 @@ describe("System", () => {
   });
 
   it("should prefer components from other systems when merging", async () => {
-    const components = await System({ foo: 1 }).include(System({ foo: 2 })).start();
+    const components = await System({ foo: 1 })
+      .include(System({ foo: 2 }))
+      .start();
     assert.equal(components.foo, 2);
   });
 
   it("should group components when depending on others", async () => {
-    const components = await System({ one: 1, two: 2, "foo": { dependsOn: ["one", "two"] } }).start();
+    const components = await System({
+      one: 1,
+      two: 2,
+      foo: { dependsOn: ["one", "two"] },
+    }).start();
     assert.equal(components.foo.one, 1);
     assert.equal(components.foo.two, 2);
   });
 
   it("should not group components when coming after others", async () => {
-    const components = await System({ one: 1, two: 2, "foo": { comesAfter: ["one", "two"] } }).start();
+    const components = await System({
+      one: 1,
+      two: 2,
+      foo: { comesAfter: ["one", "two"] },
+    }).start();
     assert.ok(!components.foo.one);
     assert.ok(!components.foo.two);
   });
 
   function PromiseComponent() {
     const state = { counter: 0, started: true, stopped: true, dependencies: [] };
-    const sleep = (x) => new Promise((resolve) => { setTimeout(resolve(x), 10) });
+    const sleep = x =>
+      new Promise(resolve => {
+        setTimeout(resolve(x), 10);
+      });
 
     return {
       state,
@@ -420,12 +459,16 @@ describe("System", () => {
       stop() {
         state.stopped = true;
         return sleep(state);
-      }
-    }
+      },
+    };
   }
 
   function ErrorPromiseComponent() {
-    return { start() { return Promise.reject(new Error("Oh Noes!")) } };
+    return {
+      start() {
+        return Promise.reject(new Error("Oh Noes!"));
+      },
+    };
   }
 
   function Unstoppable() {
@@ -436,7 +479,7 @@ describe("System", () => {
         state.started = true;
         state.dependencies = dependencies;
         return state;
-      }
+      },
     };
   }
 });

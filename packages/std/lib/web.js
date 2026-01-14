@@ -4,7 +4,7 @@ export default {
   bindr: _.curry(bindDependencies),
   check: { wasFound, wasSuccessful },
   errors: E,
-  handlers: (fns) => _.partialRight(toHandlers, [fns]),
+  handlers: fns => _.partialRight(toHandlers, [fns]),
   handlr: handlr,
   handlrr: handlrr,
   paginate: _.curry(toPagination),
@@ -111,7 +111,7 @@ function wasSuccessful(x) {
 }
 
 function bindDependencies(deps, obj) {
-  return _.mapValues((f) => _.partial(f, [deps]))(obj);
+  return _.mapValues(f => _.partial(f, [deps]))(obj);
 }
 
 function flatten(req) {
@@ -165,11 +165,11 @@ function handlr(fn) {
 }
 
 function handlrr(fn) {
-  return handlr((req) => fn(init(req)));
+  return handlr(req => fn(init(req)));
 }
 
 function toHandlers(deps, functions) {
   // create middleware fns of the form (req, res, next) -> void
-  const toMiddleware = (fn) => handlrr(_.partial(fn, [deps]));
+  const toMiddleware = fn => handlrr(_.partial(fn, [deps]));
   return _.mapValues(toMiddleware)(functions);
 }

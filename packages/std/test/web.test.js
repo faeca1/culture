@@ -8,7 +8,7 @@ test("middleware handlers correctly wrap", async () => {
       return 2 * i;
     },
   };
-  const middleware = _.web.handlers({ maths }, fns);
+  const middleware = _.web.handlers(fns)({ maths });
   const req = { params: { id: Math.PI } };
   const res = { send() {} };
   const spy = spyOn(res, "send");

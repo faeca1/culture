@@ -15,23 +15,20 @@ const FORM_DATA = "application/x-www-form-urlencoded";
 const DEFAULT_CONTENT_TYPE = "application/json; charset=UTF-8";
 
 export default function http(deps) {
-  const clock = deps?.clock || _clock();
-  const config = deps?.config || {};
-  const fetch = deps?.fetch || _fetch();
-  const logger = child(deps?.logger, "http");
-
-  return U.bindValues({ clock, config, fetch, logger }, { get, post });
+  return U.bindValues(dependencies(deps), { get, post });
 }
 
 export function get(deps, req) {
   if (!req) {
     req = deps;
-    deps = { clock: _clock(), config: {}, fetch: _fetch() };
+    deps = dependencies();
+  } else {
+    deps = dependencies(deps);
   }
 
   if (_.isString(req)) req = { url: req };
 
-  const options = I.produce(req, (x) => {
+  const options = I.produce(req, x => {
     x.method = "GET";
   });
 
@@ -41,12 +38,14 @@ export function get(deps, req) {
 export function post(deps, req) {
   if (!req) {
     req = deps;
-    deps = { clock: _clock(), config: {}, fetch: _fetch() };
+    deps = dependencies();
+  } else {
+    deps = dependencies(deps);
   }
 
   if (_.isString(req)) req = { url: req };
 
-  const options = I.produce(req, (x) => {
+  const options = I.produce(req, x => {
     x.method = "POST";
   });
 
@@ -74,7 +73,7 @@ async function impl({ clock, config, logger, fetch }, opts) {
   } catch (ex) {
     const duration = clock.sinceMillis(start);
     const data = buildDataObj({ timestamp, duration, options, body });
-    const context = I.produce(data, (x) => {
+    const context = I.produce(data, x => {
       const { message, code, stack } = ex;
       x.error = { message, code, stack };
     });
@@ -107,7 +106,7 @@ function buildBaseObj(opts, timings) {
 }
 
 function buildFinalObj(base, others) {
-  return I.produce(base, (x) => {
+  return I.produce(base, x => {
     if (others.req) x.req = others.req;
     if (others.res) x.res = others.res;
     if (others.error) x.error = others.error;
@@ -134,7 +133,7 @@ function buildJsonBody(req) {
 }
 
 function buildOptions(config, opts) {
-  return I.produce(opts, (x) => {
+  return I.produce(opts, x => {
     if (config.baseUrl) x.baseUrl ??= config.baseUrl;
     if (config.details) x.details ??= config.details;
     if (config.source) x.source ??= config.source;
@@ -157,7 +156,7 @@ function buildOptions(config, opts) {
 
 function buildReqObj(opts, body) {
   const req = _.pick(["baseUrl", "headers", "method", "path", "url"])(opts);
-  return I.produce(req, (x) => {
+  return I.produce(req, x => {
     x.method ??= "GET";
     if (body) x.body = body;
     if (x.headers?.Authorization) {
@@ -172,6 +171,12 @@ function buildUrl(opts) {
 
 function defaultUserAgent(opts) {
   return opts.userAgent ?? `@faeca1/std:${pkg.version}`;
+}
+
+function dependencies(opts) {
+  const logger = child(opts?.logger, "http");
+  const defaults = { clock: _clock(), config: {}, fetch: _fetch() };
+  return { ...defaults, ...opts, logger };
 }
 
 function hasFormData(req) {
