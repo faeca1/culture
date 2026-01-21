@@ -20,6 +20,7 @@ function get(name, opts) {
     case "auth":
       return auth();
     case "bole":
+    case "logger":
       return bole(packages);
     case "boss":
       return boss(packages);

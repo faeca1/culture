@@ -5,16 +5,20 @@ import * as U from "./utils.js";
 import pkg from "../package.json";
 import { _, immer as I } from "@faeca1/plug";
 
-http.http = http;
-http.get = get;
-http.post = post;
-http.authHeader = authHeader;
-http.jsonApiHeaders = jsonApiHeaders;
+component.http = http;
+component.get = get;
+component.post = post;
+component.authHeader = authHeader;
+component.jsonApiHeaders = jsonApiHeaders;
 
 const FORM_DATA = "application/x-www-form-urlencoded";
 const DEFAULT_CONTENT_TYPE = "application/json; charset=UTF-8";
 
-export default function http(deps) {
+export default function component() {
+  return { start: http };
+}
+
+export function http(deps) {
   return U.bindValues(dependencies(deps), { get, post });
 }
 

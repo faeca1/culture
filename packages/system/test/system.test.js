@@ -2,7 +2,7 @@ import { describe, it } from "bun:test";
 import assert from "assert";
 import System from "../lib/system.js";
 
-describe("System", () => {
+describe("system", () => {
   it("should start without components", async () => {
     const components = await System().start();
     assert.equal(Object.keys(components).length, 0);

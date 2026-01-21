@@ -1,392 +1,377 @@
 import { beforeEach, describe, test, expect, mock } from "bun:test";
 
-import Lib from '../lib/index.js';
+import Lib from "../lib/index.js";
 const { toPathParts, writeAsJson, write } = Lib.files;
 
-describe("writeAsJson", () => {
-  const mkdir = mock(() => { });
-  const writeFile = mock(() => { });
+describe("files", () => {
+  describe("writeAsJson", () => {
+    const mkdir = mock(() => {});
+    const writeFile = mock(() => {});
 
+    beforeEach(() => {
+      mock.module("node:fs/promises", () => ({ default: { mkdir, writeFile } }));
+      mkdir.mockReset();
+      writeFile.mockReset();
+    });
 
-  beforeEach(() => {
-    mock.module("node:fs/promises", () =>
-      ({ default: { mkdir, writeFile } })
-    );
-    mkdir.mockReset();
-    writeFile.mockReset();
+    test("accepts 3 arguments", async () => {
+      await writeAsJson("./data", "pizza", { fizz: "buzz" });
+
+      expect(mkdir).toHaveBeenCalledWith("./data", { recursive: true });
+      expect(writeFile).toHaveBeenCalledOnce();
+
+      const [[filepath, contents]] = writeFile.mock.calls;
+      expect(filepath).toEqual(expect.stringContaining("/data/pizza.json"));
+      expect(contents).toBe('{"fizz":"buzz"}');
+    });
+
+    test("accepts 2 arguments", async () => {
+      await writeAsJson({ dir: "./data", name: "pizza" }, { fizz: "buzz" });
+
+      expect(mkdir).toHaveBeenCalledWith("./data", { recursive: true });
+      expect(writeFile).toHaveBeenCalledOnce();
+
+      const [[filepath, contents]] = writeFile.mock.calls;
+      expect(filepath).toEqual(expect.stringContaining("/data/pizza.json"));
+      expect(contents).toBe('{"fizz":"buzz"}');
+    });
   });
 
+  describe("write", () => {
+    const mkdir = mock(() => {});
+    const writeFile = mock(() => {});
 
-  test("accepts 3 arguments", async () => {
-    await writeAsJson("./data", "pizza", { fizz: "buzz" });
+    beforeEach(() => {
+      mock.module("node:fs/promises", () => ({ default: { mkdir, writeFile } }));
+      mkdir.mockReset();
+      writeFile.mockReset();
+    });
 
-    expect(mkdir).toHaveBeenCalledWith("./data", { recursive: true });
-    expect(writeFile).toHaveBeenCalledOnce();
+    test("with string name", async () => {
+      const config = { dir: "./data", structure: "regular" };
+      const obj = { source: "food", type: "dinner", fizz: "buzz" };
+      await write({ config }, "pizza", obj);
 
-    const [[filepath, contents]] = writeFile.mock.calls;
-    expect(filepath).toEqual(expect.stringContaining("/data/pizza.json"));
-    expect(contents).toBe('{"fizz":"buzz"}');
+      expect(mkdir).toHaveBeenCalledWith("data/food/dinner", { recursive: true });
+      expect(writeFile).toHaveBeenCalledOnce();
+
+      const [[filepath, contents]] = writeFile.mock.calls;
+      expect(filepath).toEqual(expect.stringContaining("/data/food/dinner/pizza.json"));
+      expect(contents).toBe(JSON.stringify(obj));
+    });
+
+    test("with namer function", async () => {
+      const config = { dir: "./data", structure: "regular" };
+      const obj = { source: "food", type: "dinner", fizz: "buzz" };
+      await write({ config }, x => `pizza-${x.fizz}`, obj);
+
+      expect(mkdir).toHaveBeenCalledWith("data/food/dinner", { recursive: true });
+      expect(writeFile).toHaveBeenCalledOnce();
+
+      const [[filepath, contents]] = writeFile.mock.calls;
+      expect(filepath).toEqual(
+        expect.stringContaining("/data/food/dinner/pizza-buzz.json"),
+      );
+      expect(contents).toBe(JSON.stringify(obj));
+    });
+
+    test("partially applied", async () => {
+      const config = { dir: "./data", structure: "regular" };
+      const obj = { source: "food", type: "dinner", fizz: "buzz" };
+      const fn = write({ config }, x => `pizza-${x.fizz}`);
+
+      await fn(obj);
+
+      expect(mkdir).toHaveBeenCalledWith("data/food/dinner", { recursive: true });
+      expect(writeFile).toHaveBeenCalledOnce();
+
+      const [[filepath, contents]] = writeFile.mock.calls;
+      expect(filepath).toEqual(
+        expect.stringContaining("/data/food/dinner/pizza-buzz.json"),
+      );
+      expect(contents).toBe(JSON.stringify(obj));
+    });
   });
 
+  describe("toPathPaths", () => {
+    describe("deep structure", () => {
+      const config = { dir: "data", structure: "deep" };
+      const filename = "report";
 
-  test("accepts 2 arguments", async () => {
-    await writeAsJson({ dir: "./data", filename: "pizza" }, { fizz: "buzz" });
-
-    expect(mkdir).toHaveBeenCalledWith("./data", { recursive: true });
-    expect(writeFile).toHaveBeenCalledOnce();
-
-    const [[filepath, contents]] = writeFile.mock.calls;
-    expect(filepath).toEqual(expect.stringContaining("/data/pizza.json"));
-    expect(contents).toBe('{"fizz":"buzz"}');
-  });
-});
-
-
-describe("write", () => {
-  const mkdir = mock(() => { });
-  const writeFile = mock(() => { });
-
-
-  beforeEach(() => {
-    mock.module("node:fs/promises", () =>
-      ({ default: { mkdir, writeFile } })
-    );
-    mkdir.mockReset();
-    writeFile.mockReset();
-  });
-
-
-  test("with string name", async () => {
-    const config = { directory: "./data", structure: "regular" };
-    const obj = { source: "food", type: "dinner", fizz: "buzz" };
-    await write({ config }, "pizza", obj);
-
-    expect(mkdir).toHaveBeenCalledWith("data/food/dinner", { recursive: true });
-    expect(writeFile).toHaveBeenCalledOnce();
-
-    const [[filepath, contents]] = writeFile.mock.calls;
-    expect(filepath).toEqual(expect.stringContaining("/data/food/dinner/pizza.json"));
-    expect(contents).toBe(JSON.stringify(obj));
-  });
-
-
-  test("with namer function", async () => {
-    const config = { directory: "./data", structure: "regular" };
-    const obj = { source: "food", type: "dinner", fizz: "buzz" };
-    await write({ config }, x => `pizza-${x.fizz}`, obj);
-
-    expect(mkdir).toHaveBeenCalledWith("data/food/dinner", { recursive: true });
-    expect(writeFile).toHaveBeenCalledOnce();
-
-    const [[filepath, contents]] = writeFile.mock.calls;
-    expect(filepath).toEqual(expect.stringContaining("/data/food/dinner/pizza-buzz.json"));
-    expect(contents).toBe(JSON.stringify(obj));
-  });
-
-
-  test("partially applied", async () => {
-    const config = { directory: "./data", structure: "regular" };
-    const obj = { source: "food", type: "dinner", fizz: "buzz" };
-    const fn = write({ config }, x => `pizza-${x.fizz}`);
-
-    await fn(obj);
-
-    expect(mkdir).toHaveBeenCalledWith("data/food/dinner", { recursive: true });
-    expect(writeFile).toHaveBeenCalledOnce();
-
-    const [[filepath, contents]] = writeFile.mock.calls;
-    expect(filepath).toEqual(expect.stringContaining("/data/food/dinner/pizza-buzz.json"));
-    expect(contents).toBe(JSON.stringify(obj));
-  });
-});
-
-
-describe("toPathPaths", () => {
-  describe("deep structure", () => {
-    const config = { directory: "data", structure: "deep" };
-    const filename = "report";
-
-
-    test("handles ordinary file", () => {
-      const obj = { fizz: "buzz" };
-      expect(toPathParts({ config }, filename, obj)).toMatchInlineSnapshot(`
+      test("handles ordinary file", () => {
+        const obj = { fizz: "buzz" };
+        expect(toPathParts({ config }, filename, obj)).toMatchInlineSnapshot(`
         {
           "dir": "data",
-          "filename": "report",
+          "name": "report",
         }
       `);
-    });
+      });
 
-
-    test("handles file with source provenance", () => {
-      const obj = { source: "elliptic", fizz: "buzz" };
-      expect(toPathParts({ config }, filename, obj)).toMatchInlineSnapshot(`
+      test("handles file with source provenance", () => {
+        const obj = { source: "elliptic", fizz: "buzz" };
+        expect(toPathParts({ config }, filename, obj)).toMatchInlineSnapshot(`
         {
           "dir": "data/elliptic",
-          "filename": "report",
+          "name": "report",
         }
       `);
-    });
+      });
 
-
-    test("handles file with type provenance", () => {
-      const obj = { type: "disco", fizz: "buzz" };
-      expect(toPathParts({ config }, filename, obj)).toMatchInlineSnapshot(`
+      test("handles file with type provenance", () => {
+        const obj = { type: "disco", fizz: "buzz" };
+        expect(toPathParts({ config }, filename, obj)).toMatchInlineSnapshot(`
         {
           "dir": "data/disco",
-          "filename": "report",
+          "name": "report",
         }
       `);
-    });
+      });
 
-
-    test("handles file with all provenance", () => {
-      const obj = { source: "elliptic", type: "disco", fizz: "buzz" };
-      expect(toPathParts({ config }, filename, obj)).toMatchInlineSnapshot(`
+      test("handles file with all provenance", () => {
+        const obj = { source: "elliptic", type: "disco", fizz: "buzz" };
+        expect(toPathParts({ config }, filename, obj)).toMatchInlineSnapshot(`
         {
           "dir": "data/elliptic/disco",
-          "filename": "report",
+          "name": "report",
         }
       `);
-    });
+      });
 
-
-    test("handles timestamped file", () => {
-      const obj = { fizz: "buzz", timestamp: 1234567890 };
-      expect(toPathParts({ config }, filename, obj)).toMatchInlineSnapshot(`
+      test("handles timestamped file", () => {
+        const obj = { fizz: "buzz", timestamp: 1234567890 };
+        expect(toPathParts({ config }, filename, obj)).toMatchInlineSnapshot(`
         {
           "dir": "data/1970/1/15/1234567890",
-          "filename": "report",
+          "name": "report",
         }
       `);
-    });
+      });
 
-
-    test("handles timestamped file with all provenance", () => {
-      const obj = { source: "elliptic", type: "disco", timestamp: 1234567890, fizz: "buzz" };
-      expect(toPathParts({ config }, filename, obj)).toMatchInlineSnapshot(`
+      test("handles timestamped file with all provenance", () => {
+        const obj = {
+          source: "elliptic",
+          type: "disco",
+          timestamp: 1234567890,
+          fizz: "buzz",
+        };
+        expect(toPathParts({ config }, filename, obj)).toMatchInlineSnapshot(`
         {
           "dir": "data/elliptic/disco/1970/1/15/1234567890",
-          "filename": "report",
+          "name": "report",
         }
       `);
+      });
     });
-  });
 
+    describe("regular structure", () => {
+      const config = { dir: "data", structure: "regular" };
+      const filename = "report";
 
-  describe("regular structure", () => {
-    const config = { directory: "data", structure: "regular" };
-    const filename = "report";
-
-
-    test("handles ordinary file", () => {
-      const obj = { fizz: "buzz" };
-      expect(toPathParts({ config }, filename, obj)).toMatchInlineSnapshot(`
+      test("handles ordinary file", () => {
+        const obj = { fizz: "buzz" };
+        expect(toPathParts({ config }, filename, obj)).toMatchInlineSnapshot(`
         {
           "dir": "data",
-          "filename": "report",
+          "name": "report",
         }
       `);
-    });
+      });
 
-
-    test("handles file with source provenance", () => {
-      const obj = { source: "elliptic", fizz: "buzz" };
-      expect(toPathParts({ config }, filename, obj)).toMatchInlineSnapshot(`
+      test("handles file with source provenance", () => {
+        const obj = { source: "elliptic", fizz: "buzz" };
+        expect(toPathParts({ config }, filename, obj)).toMatchInlineSnapshot(`
         {
           "dir": "data/elliptic",
-          "filename": "report",
+          "name": "report",
         }
       `);
-    });
+      });
 
-
-    test("handles file with type provenance", () => {
-      const obj = { type: "disco", fizz: "buzz" };
-      expect(toPathParts({ config }, filename, obj)).toMatchInlineSnapshot(`
+      test("handles file with type provenance", () => {
+        const obj = { type: "disco", fizz: "buzz" };
+        expect(toPathParts({ config }, filename, obj)).toMatchInlineSnapshot(`
         {
           "dir": "data/disco",
-          "filename": "report",
+          "name": "report",
         }
       `);
-    });
+      });
 
-
-    test("handles file with all provenance", () => {
-      const obj = { source: "elliptic", type: "disco", fizz: "buzz" };
-      expect(toPathParts({ config }, filename, obj)).toMatchInlineSnapshot(`
+      test("handles file with all provenance", () => {
+        const obj = { source: "elliptic", type: "disco", fizz: "buzz" };
+        expect(toPathParts({ config }, filename, obj)).toMatchInlineSnapshot(`
         {
           "dir": "data/elliptic/disco",
-          "filename": "report",
+          "name": "report",
         }
       `);
-    });
+      });
 
-
-    test("handles timestamped file", () => {
-      const obj = { fizz: "buzz", timestamp: 1234567890 };
-      expect(toPathParts({ config }, filename, obj)).toMatchInlineSnapshot(`
+      test("handles timestamped file", () => {
+        const obj = { fizz: "buzz", timestamp: 1234567890 };
+        expect(toPathParts({ config }, filename, obj)).toMatchInlineSnapshot(`
         {
           "dir": "data/1234567890",
-          "filename": "report",
+          "name": "report",
         }
       `);
-    });
+      });
 
-
-    test("handles timestamped file with all provenance", () => {
-      const obj = { source: "elliptic", type: "disco", timestamp: 1234567890, fizz: "buzz" };
-      expect(toPathParts({ config }, filename, obj)).toMatchInlineSnapshot(`
+      test("handles timestamped file with all provenance", () => {
+        const obj = {
+          source: "elliptic",
+          type: "disco",
+          timestamp: 1234567890,
+          fizz: "buzz",
+        };
+        expect(toPathParts({ config }, filename, obj)).toMatchInlineSnapshot(`
         {
           "dir": "data/elliptic/disco/1234567890",
-          "filename": "report",
+          "name": "report",
         }
       `);
+      });
     });
-  });
 
+    describe("shallow structure", () => {
+      const config = { dir: "data", structure: "shallow" };
+      const filename = "report";
 
-  describe("shallow structure", () => {
-    const config = { directory: "data", structure: "shallow" };
-    const filename = "report";
-
-
-    test("handles ordinary file", () => {
-      const obj = { fizz: "buzz" };
-      expect(toPathParts({ config }, filename, obj)).toMatchInlineSnapshot(`
+      test("handles ordinary file", () => {
+        const obj = { fizz: "buzz" };
+        expect(toPathParts({ config }, filename, obj)).toMatchInlineSnapshot(`
         {
           "dir": "data",
-          "filename": "report",
+          "name": "report",
         }
       `);
-    });
+      });
 
-
-    test("handles file with source provenance", () => {
-      const obj = { source: "elliptic", fizz: "buzz" };
-      expect(toPathParts({ config }, filename, obj)).toMatchInlineSnapshot(`
+      test("handles file with source provenance", () => {
+        const obj = { source: "elliptic", fizz: "buzz" };
+        expect(toPathParts({ config }, filename, obj)).toMatchInlineSnapshot(`
         {
           "dir": "data/elliptic",
-          "filename": "report",
+          "name": "report",
         }
       `);
-    });
+      });
 
-
-    test("handles file with type provenance", () => {
-      const obj = { type: "disco", fizz: "buzz" };
-      expect(toPathParts({ config }, filename, obj)).toMatchInlineSnapshot(`
+      test("handles file with type provenance", () => {
+        const obj = { type: "disco", fizz: "buzz" };
+        expect(toPathParts({ config }, filename, obj)).toMatchInlineSnapshot(`
         {
           "dir": "data/disco",
-          "filename": "report",
+          "name": "report",
         }
       `);
-    });
+      });
 
-
-    test("handles file with all provenance", () => {
-      const obj = { source: "elliptic", type: "disco", fizz: "buzz" };
-      expect(toPathParts({ config }, filename, obj)).toMatchInlineSnapshot(`
+      test("handles file with all provenance", () => {
+        const obj = { source: "elliptic", type: "disco", fizz: "buzz" };
+        expect(toPathParts({ config }, filename, obj)).toMatchInlineSnapshot(`
         {
           "dir": "data/elliptic-disco",
-          "filename": "report",
+          "name": "report",
         }
       `);
-    });
+      });
 
-
-    test("handles timestamped file", () => {
-      const obj = { fizz: "buzz", timestamp: 1234567890 };
-      expect(toPathParts({ config }, filename, obj)).toMatchInlineSnapshot(`
+      test("handles timestamped file", () => {
+        const obj = { fizz: "buzz", timestamp: 1234567890 };
+        expect(toPathParts({ config }, filename, obj)).toMatchInlineSnapshot(`
         {
           "dir": "data/1234567890",
-          "filename": "report",
+          "name": "report",
         }
       `);
-    });
+      });
 
-
-    test("handles timestamped file with all provenance", () => {
-      const obj = { source: "elliptic", type: "disco", timestamp: 1234567890, fizz: "buzz" };
-      expect(toPathParts({ config }, filename, obj)).toMatchInlineSnapshot(`
+      test("handles timestamped file with all provenance", () => {
+        const obj = {
+          source: "elliptic",
+          type: "disco",
+          timestamp: 1234567890,
+          fizz: "buzz",
+        };
+        expect(toPathParts({ config }, filename, obj)).toMatchInlineSnapshot(`
         {
           "dir": "data/elliptic-disco-1234567890",
-          "filename": "report",
+          "name": "report",
         }
       `);
-    });
-  });
-
-
-  describe("flat structure", () => {
-    const config = { directory: "data" };
-    const filename = "report";
-
-
-    test("handles ordinary file", () => {
-      const obj = { fizz: "buzz" };
-      expect(toPathParts({ config }, filename, obj)).toMatchInlineSnapshot(`
-        {
-          "dir": "data",
-          "filename": "report",
-        }
-      `);
+      });
     });
 
+    describe("flat structure", () => {
+      const config = { dir: "data" };
+      const filename = "report";
 
-    test("handles file with source provenance", () => {
-      const obj = { source: "elliptic", fizz: "buzz" };
-      expect(toPathParts({ config }, filename, obj)).toMatchInlineSnapshot(`
+      test("handles ordinary file", () => {
+        const obj = { fizz: "buzz" };
+        expect(toPathParts({ config }, filename, obj)).toMatchInlineSnapshot(`
         {
           "dir": "data",
-          "filename": "elliptic-report",
+          "name": "report",
         }
       `);
-    });
+      });
 
-
-    test("handles file with type provenance", () => {
-      const obj = { type: "disco", fizz: "buzz" };
-      expect(toPathParts({ config }, filename, obj)).toMatchInlineSnapshot(`
+      test("handles file with source provenance", () => {
+        const obj = { source: "elliptic", fizz: "buzz" };
+        expect(toPathParts({ config }, filename, obj)).toMatchInlineSnapshot(`
         {
           "dir": "data",
-          "filename": "disco-report",
+          "name": "elliptic-report",
         }
       `);
-    });
+      });
 
-
-    test("handles file with all provenance", () => {
-      const obj = { source: "elliptic", type: "disco", fizz: "buzz" };
-      expect(toPathParts({ config }, filename, obj)).toMatchInlineSnapshot(`
+      test("handles file with type provenance", () => {
+        const obj = { type: "disco", fizz: "buzz" };
+        expect(toPathParts({ config }, filename, obj)).toMatchInlineSnapshot(`
         {
           "dir": "data",
-          "filename": "elliptic-disco-report",
+          "name": "disco-report",
         }
       `);
-    });
+      });
 
-
-    test("handles timestamped file", () => {
-      const obj = { fizz: "buzz", timestamp: 1234567890 };
-      expect(toPathParts({ config }, filename, obj)).toMatchInlineSnapshot(`
+      test("handles file with all provenance", () => {
+        const obj = { source: "elliptic", type: "disco", fizz: "buzz" };
+        expect(toPathParts({ config }, filename, obj)).toMatchInlineSnapshot(`
         {
           "dir": "data",
-          "filename": "1234567890-report",
+          "name": "elliptic-disco-report",
         }
       `);
-    });
+      });
 
-
-    test("handles timestamped file with all provenance", () => {
-      const obj = { source: "elliptic", type: "disco", timestamp: 1234567890, fizz: "buzz" };
-      expect(toPathParts({ config }, filename, obj)).toMatchInlineSnapshot(`
+      test("handles timestamped file", () => {
+        const obj = { fizz: "buzz", timestamp: 1234567890 };
+        expect(toPathParts({ config }, filename, obj)).toMatchInlineSnapshot(`
         {
           "dir": "data",
-          "filename": "elliptic-disco-1234567890-report",
+          "name": "1234567890-report",
         }
       `);
+      });
+
+      test("handles timestamped file with all provenance", () => {
+        const obj = {
+          source: "elliptic",
+          type: "disco",
+          timestamp: 1234567890,
+          fizz: "buzz",
+        };
+        expect(toPathParts({ config }, filename, obj)).toMatchInlineSnapshot(`
+        {
+          "dir": "data",
+          "name": "elliptic-disco-1234567890-report",
+        }
+      `);
+      });
     });
   });
 });
-

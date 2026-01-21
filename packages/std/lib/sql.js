@@ -1,11 +1,13 @@
 import { _ } from "@faeca1/plug";
 
-export default {
-  db,
-  call: _.curry(call),
-  query: _.curry(query),
-  thunk: _.curry(thunk),
-};
+component.call = _.curry(call);
+component.db = db;
+component.query = _.curry(query);
+component.thunk = _.curry(thunk);
+
+export default function component() {
+  return { start: db };
+}
 
 function optional(name) {
   try {
