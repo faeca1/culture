@@ -103,6 +103,20 @@ describe("system", () => {
     assert.ok(components.foo.fizz.started);
   });
 
+  it("should handle deeply nested components", async () => {
+    const components = await System({
+      foo: {
+        bar: {
+          fizz: PromiseComponent(),
+          buzz: [PromiseComponent(), "fizz"],
+          nested: true,
+        },
+        nested: true,
+      },
+    }).start();
+    assert.ok(components.foo.bar.buzz.dependencies.fizz.started);
+  });
+
   it("should accept compact, array definitions", async () => {
     const definition = {
       config: { foo: { names: ["pizza", "pasta"] } },

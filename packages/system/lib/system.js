@@ -237,8 +237,7 @@ function _hasSubComponents(component) {
   return Object.entries(component).filter(_isSubComponent).length > 0;
 }
 
-function _isSubComponent([k, v]) {
-  if (["init", "start"].includes(k)) return false;
+function _isSubComponent([, v]) {
   return (
     U.isFunction(v) ||
     U.isFunction(v?.init) ||
@@ -291,9 +290,9 @@ function _toDefinition([k, v], opts) {
   // separate out and create all definitions
   const [subComponents, others] = _splitOffSubComponents(v);
   const mainDefinition = _toDefinition([k, others], opts);
-  const subComponentDefinitions = subComponents.map(([vk, vv]) =>
-    _toDefinition([`${k}.${vk}`, vv], opts),
-  );
+  const subComponentDefinitions = subComponents
+    .map(([vk, vv]) => _toDefinition([`${k}.${vk}`, vv], opts))
+    .flat();
 
   // use 'local' sub-components over global ones.
   const subObj = Object.fromEntries(subComponents);
