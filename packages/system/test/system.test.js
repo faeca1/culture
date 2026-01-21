@@ -261,6 +261,18 @@ describe("system", () => {
     assert(!components.foo.routes.dependencies.store.topLevel);
   });
 
+  it("should notice nested keyword if present", async () => {
+    const components = await System({
+      foo: {
+        nested: true,
+        bar: PromiseComponent(),
+        fizz: [PromiseComponent(), "bar"],
+      },
+    }).start();
+
+    assert(components.foo.fizz.dependencies.bar.started);
+  });
+
   it("should reject invalid dependencies", () => {
     assert.throws(
       () => {
@@ -442,7 +454,7 @@ describe("system", () => {
   });
 
   function PromiseComponent() {
-    const state = { counter: 0, started: true, stopped: true, dependencies: [] };
+    const state = { counter: 0, started: false, stopped: false, dependencies: [] };
     const sleep = x =>
       new Promise(resolve => {
         setTimeout(resolve(x), 10);

@@ -140,6 +140,10 @@ function _conformComponent(c, opts) {
     return c.init;
   }
 
+  if (U.isFunction(c.start)) {
+    return c;
+  }
+
   if (U.isString(c)) {
     return getComponents(c, opts);
   }
@@ -224,6 +228,12 @@ function _getDependencies(definitions, system, name) {
 function _hasSubComponents(component) {
   if (Array.isArray(component)) return false;
   if (U.isFunction(component)) return false;
+  if (component.nested === true) return true;
+
+  const keys = new Set(Object.keys(component));
+  const interesting = new Set(["init", "start"]);
+  if (!keys.isDisjointFrom(interesting)) return false;
+
   return Object.entries(component).filter(_isSubComponent).length > 0;
 }
 
@@ -242,6 +252,10 @@ function _sortComponents(definitions) {
 }
 
 function _splitOffSubComponents(component) {
+  if (component.nested === true) {
+    return [Object.entries(component).filter(([k]) => k !== "nested"), {}];
+  }
+
   const subComponents = Object.entries(component).filter(_isSubComponent);
   const others = { ...component };
   for (const [k] of subComponents) {
@@ -309,6 +323,7 @@ function _toDefinition([k, v], opts) {
     }
     return obj;
   };
+
   return [mainDefinition, ...subComponentDefinitions];
 }
 
