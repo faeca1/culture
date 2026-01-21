@@ -1,0 +1,21 @@
+{
+  "config": {
+    "http": {
+      "auth": { "basic": { "allowed": "user:ssshhh:3" } },
+      "routes": { "roles": { "ping": 0, "read": 1 } },
+      "swagger": { "buildResponses": false }
+    },
+    "logger": { "level": "debug", "name": "pizza" }
+  },
+  "http": {
+    "nested": true,
+    "auth": ["auth", "app", "reqLogger"],
+    "app": ["app", "logger"],
+    "datadog": ["datadog", "app"],
+    "reqLogger": ["logger", ["app", "logger"]],
+    "routes": ["routes", ["app", "auth", "docs", "handlers"], ["datadog", "swagger"]],
+    "server": ["server", ["app", "logger"], "routes"],
+    "swagger": ["swagger", ["app", "docs"], "auth"]
+  },
+  "logger": "logger"
+}
