@@ -1,6 +1,7 @@
 import auth from "./auth/index.js";
 import bole from "./bole.js";
 import boss from "./boss.js";
+import db from "./db.js";
 import duck from "./duck.js";
 import * as express from "./express/index.js";
 import google from "./google.js";
@@ -24,6 +25,8 @@ function get(name, opts) {
       return bole(packages);
     case "boss":
       return boss(packages);
+    case "db":
+      return db();
     case "duck":
       return duck(packages);
     case "express.app":
