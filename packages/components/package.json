@@ -1,0 +1,14 @@
+{
+  "name": "@faeca1/components",
+  "version": "0.1.0",
+  "files": [
+    "index.js",
+    "lib"
+  ],
+  "main": "index.js",
+  "dependencies": {
+    "@faeca1/std": "workspace:*"
+  },
+  "author": "faeca1",
+  "license": "MIT"
+}

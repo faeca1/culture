@@ -129,19 +129,6 @@ describe("system", () => {
     assert.ok(system.bar.dependencies.foo);
   });
 
-  it("should accept a built-in definition referred to by name", async () => {
-    const components = await System({
-      postgres: () => ({
-        queryRaw() {
-          return 42;
-        },
-      }),
-      db: ["db", "postgres"],
-    }).start();
-    const resp = await components.db.query("SELECT the secret;");
-    assert.equal(resp, 42);
-  });
-
   it("should reject attempts to add an undefined component", () => {
     assert.throws(
       () => {

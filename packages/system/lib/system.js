@@ -1,8 +1,6 @@
 import * as U from "./utils.js";
 import toposort from "./toposort.js";
-import getComponents, * as components from "./components/index.js";
 
-system.components = components;
 system.create = create;
 system.merge = merge;
 system.start = start;
@@ -130,12 +128,18 @@ async function stop(definitions) {
 function _conformComponent(c, opts) {
   if (!c || (U.hasProp(c, "init") && !c.init)) return;
 
+  if (opts?.factory) {
+    c = opts.factory(c.init || c, opts.packages);
+  }
+
   if (U.isFunction(c)) {
     return { start: c };
   }
+
   if (U.isFunction(c.init)) {
     return { start: c.init };
   }
+
   if (U.isFunction(c.init?.start)) {
     return c.init;
   }
@@ -144,32 +148,29 @@ function _conformComponent(c, opts) {
     return c;
   }
 
-  if (U.isString(c)) {
-    return getComponents(c, opts);
-  }
-
-  if (U.isString(c.init)) {
-    return getComponents(c.init, opts);
-  }
-
-  if (c.init)
+  if (c.init) {
     return {
       start() {
         return c.init;
       },
     };
-  if (c.dependsOn)
+  }
+
+  if (c.dependsOn) {
     return {
       start(ds) {
         return ds;
       },
     };
-  if (c.comesAfter)
+  }
+
+  if (c.comesAfter) {
     return {
       start() {
         return {};
       },
     };
+  }
 
   return {
     start() {

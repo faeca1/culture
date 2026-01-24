@@ -1,3 +1,4 @@
+import factory from "@faeca1/components";
 import config from "@faeca1/config";
 import std from "@faeca1/std";
 import System from "@faeca1/system";
@@ -5,6 +6,7 @@ const pkgs = std.packages;
 
 std.config = config;
 std.system = system;
+std.system.factory = factory;
 Object.keys(System).forEach(k => {
   std.system[k] = System[k];
 });
@@ -24,5 +26,5 @@ function system(definition, opts) {
     obj = { ...definition, config: wrapped };
   }
 
-  return System(obj, { ...opts, packages, autoConfig });
+  return System(obj, { factory, ...opts, packages, autoConfig });
 }

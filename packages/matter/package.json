@@ -8,7 +8,7 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "bun build index.js --target=node --outfile=dist/index.js",
-    "deps": "bun install --no-save @faeca1/std@workspace:* @faeca1/config@workspace:* @faeca1/system@workspace:*",
+    "deps": "bun install --no-save @faeca1/std@workspace:* @faeca1/components@workspace:* @faeca1/config@workspace:* @faeca1/system@workspace:*",
     "release": "bun run deps && bun run build"
   },
   "author": "faeca1",
