@@ -7,12 +7,13 @@
     },
     "logger": { "level": "debug", "name": "pizza" }
   },
+  "foo": "foo",
   "http": {
     "nested": true,
     "auth": ["auth", "app", "reqLogger"],
     "app": ["app", "logger"],
     "datadog": ["datadog", "app"],
-    "reqLogger": ["logger", ["app", "logger"]],
+    "reqLogger": ["reqLog", ["app", "logger"]],
     "routes": ["routes", ["app", "auth", "docs", "handlers"], ["datadog", "swagger"]],
     "server": ["server", ["app", "logger"], "routes"],
     "swagger": ["swagger", ["app", "docs"], "auth"]
