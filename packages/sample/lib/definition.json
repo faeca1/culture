@@ -5,9 +5,10 @@
       "routes": { "roles": { "ping": 0, "read": 1 } },
       "swagger": { "buildResponses": false }
     },
-    "logger": { "level": "debug", "name": "pizza" }
+    "logger": { "level": "info", "name": "pizza" }
   },
-  "foo": "foo",
+  "docs": "docs",
+  "handlers": "handlers",
   "http": {
     "nested": true,
     "auth": ["auth", "app", "reqLogger"],
